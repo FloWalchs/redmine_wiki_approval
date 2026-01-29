@@ -1,0 +1,62 @@
+
+<%= t('wiki_approval_notifications_typ',
+      typ: @type,
+      author: @actor&.name) %>
+
+============================================================
+
+<%= @wiki_page_title %>
+Status: <%= l("wiki_approval_workflow.status.#{@approval.status}") %>
+
+<%= @wiki_page_url %>
+
+------------------------------------------------------------
+
+<%= @wiki_page.content.author.name %>
+(<%= I18n.t("field_author") %>
+<% if @approval.author_id == @wiki_page.content.author.id %>
+, <%= I18n.t("label_wiki_approval_starter") %>)
+<% else %>
+)
+<%= @approval.author.name %>
+(<%= I18n.t("label_wiki_approval_starter") %>)
+<% end %>
+
+<% if @approval.note.present? %>
+Note:
+  <%= @approval.note %>
+<% end %>
+
+<%
+  grouped = @approval.approval_steps.group_by(&:step)
+  sorted  = grouped.sort_by { |(step, _)| step.to_i }
+%>
+
+<% sorted.each do |step, steps| %>
+------------------------------------------------------------
+<%= I18n.t(:label_wiki_approval_step, default: 'Step') %> <%= step %>
+<%
+  step_type_key   = steps.first&.step_type
+  step_type_label = I18n.t("wiki_approval_#{step_type_key}", default: '')
+%>
+<% if step_type_label.present? %>
+(Type: <%= step_type_label %>)
+<% end %>
+
+<% steps.each do |s| %>
+- <%= s.principal&.name %>
+  <% if s.status.present? %>
+  Status: <%= I18n.t("wiki_approval_workflow_steps.status.#{s.status}", default: s.status) %>
+  <% end %>
+  <% if s.note.present? %>
+  Note:
+    <%= s.note %>
+  <% end %>
+<% end %>
+
+<% end %>
+
+============================================================
+
+<%= l(:label_view_diff) %>
+<%= @diff_url %>

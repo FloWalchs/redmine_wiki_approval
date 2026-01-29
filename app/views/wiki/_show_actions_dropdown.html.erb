@@ -1,0 +1,20 @@
+<% if @wiki_approval_data %>
+    <% if !@wiki_approval_data[:approval]&.released? && RedmineWikiApproval.approval_start?(@project, @wiki_approval_data[:setting]) %>
+        <%= link_to(
+            sprite_icon('workflows', l(:label_wiki_approval_workflow)),
+            wiki_approval_start_path(@project.id, @page.title, @page.content.version),
+            :class => 'icon icon-workflows') %>
+    <% end %>        
+    <% if @wiki_approval_data[:step_approval] && User.current.allowed_to?(:wiki_approval_grant, @project) %>
+        <%= link_to sprite_icon('checked', l(:permission_wiki_approval_grant)),
+                    wiki_approval_grant_path(@project, @page.title, @page.content.version, @wiki_approval_data[:step_approval].id),
+                    remote: true,
+                    class: 'icon icon-approval' %>
+    <% end %>
+    <% if @wiki_approval_data[:step_approval] && User.current.allowed_to?(:wiki_approval_forward, @project) %>
+        <%= link_to sprite_icon('move', l(:permission_wiki_approval_forward)),
+                    wiki_approval_forward_path(@project, @page.title, @page.content.version, @wiki_approval_data[:step_approval].id),
+                    remote: true,
+                    class: 'icon icon-forward' %>
+    <% end %>
+<% end %>

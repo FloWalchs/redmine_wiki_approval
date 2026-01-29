@@ -1,0 +1,21 @@
+one:
+  id: 1
+
+  project_id: 1
+
+  created_at: <%= Time.now %>
+
+  updated_at: <%= Time.now %>
+
+  json_data: '{"wiki_comment_required":true,"wiki_draft_enabled":true,"wiki_approval_enabled":true,"wiki_approval_required":true,"wiki_approval_version":true}'
+
+two:
+  id: 2
+
+  project_id: 3
+
+  created_at: <%= Time.now %>
+
+  updated_at: <%= Time.now %>
+
+  json_data: '{"wiki_comment_required":true,"wiki_draft_enabled":true,"wiki_approval_enabled":true,"wiki_approval_required":true,"wiki_approval_version":true}'

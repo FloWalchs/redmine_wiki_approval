@@ -1,0 +1,46 @@
+
+pl:
+  label_wiki_approval: Zatwierdzanie wiki
+  permission_wiki_approval_settings: Zarządzanie zatwierdzaniem wiki
+  permission_wiki_approval_start: Rozpocznij zatwierdzanie
+  permission_wiki_approval_grant: Przyznaj zatwierdzenie
+  permission_wiki_approval_forward: Przekaż zatwierdzenie
+  permission_wiki_draft_view: Wyświetl wersję roboczą
+  permission_wiki_draft_create: Utwórz wersję roboczą
+  label_wiki_approval_settings_projects: Konfigurowalne dla projektu
+  label_wiki_approval_settings_comment: Wymagany komentarz wiki
+  label_wiki_approval_settings_required: Wymagane zatwierdzenie
+  label_wiki_approval_settings_version: Przepływ zatwierdzania dla następnej wersji
+  label_wiki_approval_settings_draft_enabled: Wersja robocza wiki włączona
+  label_wiki_approval_settings_enabled: Zatwierdzanie wiki włączone
+  text_wiki_approval_settings_version: 'Po rozpoczęciu przepływu zatwierdzania będzie on wymagany dla przyszłych wersji tej strony.'
+  wiki_approval_link_draft: Wyświetl wersję roboczą
+  wiki_approval_link_release: Opublikowana wersja
+  wiki_approval_workflow:
+    status:
+      draft: "Wersja robocza"
+      pending: "W trakcie zatwierdzania"
+      rejected: "Odrzucono"
+      published: "Opublikowano"
+      released: "Wydano"
+      canceled: "Anulowano"
+  wiki_approval_workflow_steps:
+    status:
+      canceled: "Anulowano"
+      unstarted: "Zaplanowano"
+      pending: "W trakcie zatwierdzania"
+      rejected: "Odrzucono"
+      approved: "Zatwierdzono"
+  label_wiki_approval_workflow: Przepływ zatwierdzania
+  label_wiki_approval_step: Krok
+  label_wiki_approval_starter: Inicjator przepływu
+  wiki_approval_unable_start_status: 'Zmiany są niedozwolone. Status to „%{status}”.'
+  wiki_approval_unable_start_user: "Użytkownik nie może pojawić się więcej niż raz."
+  wiki_approval_unable_note: Wymagany jest komentarz
+  wiki_approval_add_user: Dodaj użytkownika
+  wiki_approval_add_step: Dodaj krok
+  wiki_approval_and: ORAZ
+  wiki_approval_or: LUB
+  label_wiki_approval_workflow_plural: Przepływy zatwierdzania wiki
+  label_wiki_approval_notifications: Przepływ zatwierdzania wiki
+  wiki_approval_notifications_typ: "%{typ} został zaktualizowany przez %{author}."

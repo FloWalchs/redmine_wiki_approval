@@ -1,0 +1,45 @@
+de:
+  label_wiki_approval: Wiki-Freigabe
+  permission_wiki_approval_settings: Wiki-Freigabe verwalten
+  permission_wiki_approval_start: Freigabe starten
+  permission_wiki_approval_grant: Freigabe erteilen
+  permission_wiki_approval_forward: Freigabe weiterleiten
+  permission_wiki_draft_view: Entwurf anzeigen
+  permission_wiki_draft_create: Entwurf erstellen
+  label_wiki_approval_settings_projects: 'Pro Projekt konfigurierbar'
+  label_wiki_approval_settings_comment: Wiki-Kommentar erforderlich
+  label_wiki_approval_settings_required: Freigabe erforderlich
+  label_wiki_approval_settings_version: Freigabe-Workflow für die nächste Version
+  label_wiki_approval_settings_draft_enabled: Wiki-Entwurf aktiviert
+  label_wiki_approval_settings_enabled: Wiki-Freigabe aktiviert
+  text_wiki_approval_settings_version: "Nach dem Start eines Freigabe-Workflows ist dieser für zukünftige Versionen, dieser Seite erforderlich."
+  wiki_approval_link_draft: Entwurf anzeigen
+  wiki_approval_link_release: Veröffentliche Version
+  wiki_approval_workflow:
+    status:
+      draft: Entwurf
+      pending: In Freigabe
+      rejected: Abgelehnt
+      published: Veröffentlicht
+      released: Freigegeben
+      canceled: Abgebrochen
+  wiki_approval_workflow_steps:
+    status:
+      canceled: Abgebrochen
+      unstarted: Geplant
+      pending: In Freigabe
+      rejected: Abgelehnt
+      approved: Genehmigt
+  label_wiki_approval_workflow: Freigabe-Workflow
+  label_wiki_approval_step: Schritt
+  label_wiki_approval_starter: Workflow-Starter
+  wiki_approval_unable_start_status: Änderungen nicht erlaubt, Status ist „%{status}“.
+  wiki_approval_unable_start_user: Ein Benutzer darf nicht mehrfach vorkommen.
+  wiki_approval_unable_note: Kommentar ist erforderlich
+  wiki_approval_add_user: Benutzer hinzufügen
+  wiki_approval_add_step: Schritt hinzufügen
+  wiki_approval_and: UND
+  wiki_approval_or: ODER
+  label_wiki_approval_workflow_plural: Wiki-Freigabe-Workflows
+  label_wiki_approval_notifications: Wiki-Freigabe-Workflow
+  wiki_approval_notifications_typ: "%{typ} wurde von %{author} aktualisiert."

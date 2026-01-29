@@ -1,0 +1,45 @@
+en:
+  label_wiki_approval: Wiki approval
+  permission_wiki_approval_settings: Manage wiki approval
+  permission_wiki_approval_start: Start approval
+  permission_wiki_approval_grant: Grant approval
+  permission_wiki_approval_forward: Forward approval
+  permission_wiki_draft_view: View draft
+  permission_wiki_draft_create: Create draft
+  label_wiki_approval_settings_projects: 'Configurable per project'
+  label_wiki_approval_settings_comment: Wiki comment required
+  label_wiki_approval_settings_required: Approval required
+  label_wiki_approval_settings_version: Approval workflow for next version
+  label_wiki_approval_settings_draft_enabled: Wiki draft enabled
+  label_wiki_approval_settings_enabled: Wiki approval enabled
+  text_wiki_approval_settings_version: 'After starting an approval workflow, it will be required for future versions of this page.'
+  wiki_approval_link_draft: View draft
+  wiki_approval_link_release: Published version
+  wiki_approval_workflow:
+    status:
+      draft: "Draft"
+      pending: "In approval"
+      rejected: "Rejected"
+      published: "Published"
+      released: "Released"
+      canceled: "Canceled"
+  wiki_approval_workflow_steps:
+    status:
+      canceled: "Canceled"
+      unstarted: "Planned"
+      pending: "In approval"
+      rejected: "Rejected"
+      approved: "Approved"
+  label_wiki_approval_workflow: Approval workflow
+  label_wiki_approval_step: Step
+  label_wiki_approval_starter: Workflow starter
+  wiki_approval_unable_start_status: Changes not allowed, status is "%{status}".
+  wiki_approval_unable_start_user: "A user cannot appear multiple times."
+  wiki_approval_unable_note: Comment is required
+  wiki_approval_add_user: Add user
+  wiki_approval_add_step: Add step
+  wiki_approval_and: AND
+  wiki_approval_or: OR
+  label_wiki_approval_workflow_plural: Wiki approval workflows
+  label_wiki_approval_notifications: Wiki approval workflow
+  wiki_approval_notifications_typ: "%{typ} wurde aktualisiert von %{author}."

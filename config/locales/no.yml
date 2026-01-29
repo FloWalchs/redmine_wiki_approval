@@ -1,0 +1,34 @@
+
+no:
+  label_wiki_approval: Wiki‑godkjenning
+  permission_wiki_approval_settings: Administrere wiki‑godkjenning
+  permission_wiki_approval_start: Starte godkjenning
+  permission_wiki_approval_grant: Gi godkjenning
+  permission_wiki_approval_forward: Videresend godkjenning
+  permission_wiki_draft_view: Vis utkast
+  permission_wiki_draft_create: Opprett utkast
+  label_wiki_approval_settings_projects: Kan konfigureres per prosjekt
+  label_wiki_approval_settings_comment: Wiki‑kommentar kreves
+  label_wiki_approval_settings_required: Godkjenning kreves
+  label_wiki_approval_settings_version: Godkjenningsarbeidsflyt for neste versjon
+  label_wiki_approval_settings_draft_enabled: Wiki‑utkast aktivert
+  label_wiki_approval_settings_enabled: Wiki‑godkjenning aktivert
+  text_wiki_approval_settings_version: 'Etter at en godkjenningsarbeidsflyt er startet, vil den være påkrevd for fremtidige versjoner av denne siden.'
+  wiki_approval_link_draft: Vis utkast
+  wiki_approval_link_release: Publisert versjon
+  wiki_approval_workflow:
+    status:
+      draft: "Utkast"
+      pending: "Til godkjenning"
+      rejected: "Avvist"
+      published: "Publisert"
+      released: "Utgitt"
+      canceled: "Avbrutt"
+  wiki_approval_workflow_steps:
+    status:
+      canceled: "Avbrutt"
+      unstarted: "Planlagt"
+      pending: "Til godkjenning"
+      rejected: "Avvist"
+      approved: "Godkjent"
+  label_wiki_approval_workflow: Godkjenningsarbeidsflyt

@@ -1,0 +1,119 @@
+<h2><%= "#{@page.pretty_title} - #{l(:label_revision)} #{@page.content.version}" %></h2>
+<%= form_with url: wiki_approval_start_path(@project.id, @page.title, @page.content.version), method: :post do |f| %>
+  <div class="box tabular">
+    <h3><%= l(:permission_wiki_approval_start) %></h3>
+    <p>
+    <label><%= l(:field_comments) %></label>
+    <%= f.text_field :note, placeholder: l(:field_comments), value: @note, class: 'input-large', style: 'width: 400px;' %>
+    </p>
+    <div id="steps-container">
+      <% @steps_grouped.keys.sort.each do |step_nr| %>
+        <div class="step" data-step="<%= step_nr %>">
+          <p>
+          <label><%= l(:label_wiki_approval_step) + " #{step_nr}" %></label>
+            <% @steps_grouped[step_nr].each_with_index do |step, index| %>
+                <%= select_tag "steps[#{step_nr}][][principal_id]",
+                      principals_options_for_select(@approval_user_options, step.principal_id&.to_s),
+                      include_blank: true,
+                      class: 'user-select' %>
+                <% if index == 0 %> 
+                  <%= select_tag "steps_typ[#{step_nr}]",
+                    options_for_select([[l(:wiki_approval_or), 'or'], [l(:wiki_approval_and), 'and']], selected: step.step_type),
+                    class: "step-typ" %>
+                  <span class="add-user" data-step="<%= step_nr %>">
+                    <%= sprite_icon('add', l(:wiki_approval_add_user)) %>
+                  </span><br>
+                <% end %>
+            <% end %>
+          </p>
+        </div>
+        
+      <% end %>
+    </div>
+    <div>
+      <p>
+      <span id="add-step">
+        <%= sprite_icon('add', l(:wiki_approval_add_step)) %>
+      </span>
+      </p>
+    </div>
+    <p>
+      <%= submit_tag l(:button_save) %>
+      <%= link_to l(:button_cancel), project_wiki_page_path(@project.identifier, @page.title, :version => @page.content.version) %>
+    </p>
+  </div>
+<% end %>
+
+<script>
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const stepsContainer = document.getElementById('steps-container');
+    const wiki_approval_or = "<%= l(:wiki_approval_or) %>";
+    const wiki_approval_and = "<%= l(:wiki_approval_and) %>";
+    const label_step = "<%= l(:label_wiki_approval_step) %>";
+    const add_user = "<%= l(:wiki_approval_add_user) %>";
+
+    // Add Step
+    document.getElementById('add-step').addEventListener('click', function() {
+      const stepCount = stepsContainer.querySelectorAll('.step').length + 1;
+      // max 3 steps
+      if (stepCount >= 4) {
+        return;
+      }
+      const originalSelect = document.querySelector('.user-select')
+      const newStep = document.createElement('div');
+      newStep.classList.add('step');
+      newStep.dataset.step = stepCount;
+      newStep.innerHTML = `
+        <p>
+          <label>${label_step} ${stepCount}</label>
+          <select name="steps[${stepCount}][][principal_id]" class="user-select">
+            ${originalSelect.innerHTML}
+          </select>
+
+          <select name="steps_typ[${stepCount}]" id="step-typ-${stepCount}" class="step-typ">
+            <option value="or">${wiki_approval_or}</option>
+            <option value="and">${wiki_approval_and}</option>
+          </select>
+
+          <span class="add-user" data-step="${stepCount}">
+            ${document.querySelector('#add-step svg').outerHTML}<span class="icon-label">${add_user}</span>
+          </span>
+        </p>
+      `;
+      stepsContainer.appendChild(newStep);
+      // blank value
+      const newSelect = newStep.querySelector('select');
+      newSelect.selectedIndex = 0;
+    });
+
+    // Event Delegation für Add User
+    stepsContainer.addEventListener('click', function(e) {
+      if (e.target.closest('.add-user')) {
+        const button = e.target.closest('.add-user');
+        const stepNr = button.dataset.step;
+        const stepDiv = button.closest('.step');
+        const originalSelect = document.querySelector('.user-select')
+        
+        const currentUsers = stepDiv.querySelectorAll('select.user-select').length;
+        if (currentUsers >= 4) {
+          return;
+        }
+
+        const newUserSelect = document.createElement('div');
+        newUserSelect.innerHTML = `
+          <select name="steps[${stepNr}][][principal_id]" class="user-select">
+            ${originalSelect.innerHTML}
+          </select>
+        `;
+        stepDiv.querySelector('p').appendChild(newUserSelect);
+
+        // blank value
+        const newSelect = newUserSelect.querySelector('select');
+        newSelect.selectedIndex = 0;
+
+      }
+    });
+  });
+
+</script>

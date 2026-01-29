@@ -1,0 +1,45 @@
+ja:
+  label_wiki_approval: Wiki承認
+  permission_wiki_approval_settings: Manage wiki approval
+  permission_wiki_approval_start: Start approval
+  permission_wiki_approval_grant: Grant approval
+  permission_wiki_approval_forward: Forward approval
+  permission_wiki_draft_view: View draft
+  permission_wiki_draft_create: Create draft
+  label_wiki_approval_settings_projects: プロジェクトごとに設定可能
+  label_wiki_approval_settings_comment: Wikiコメントが必須
+  label_wiki_approval_settings_required: 承認が必要
+  label_wiki_approval_settings_version: 次のバージョンの承認ワークフロー
+  label_wiki_approval_settings_draft_enabled: Wikiの下書きが有効
+  label_wiki_approval_settings_enabled: Wiki承認が有効
+  text_wiki_approval_settings_version: '承認ワークフローを開始すると、このページの今後のバージョンで承認が必須になります。'
+  wiki_approval_link_draft: 下書きを表示
+  wiki_approval_link_release: 公開済みバージョン
+  wiki_approval_workflow:
+    status:
+      draft: "下書き"
+      pending: "承認中"
+      rejected: "却下"
+      published: "公開済み"
+      released: "リリース済み"
+      canceled: "キャンセル"
+  wiki_approval_workflow_steps:
+    status:
+      canceled: "キャンセル"
+      unstarted: "未開始"
+      pending: "承認中"
+      rejected: "却下"
+      approved: "承認済み"
+  label_wiki_approval_workflow: 承認ワークフロー
+  label_wiki_approval_step: ステップ
+  label_wiki_approval_starter: ワークフロー開始者
+  wiki_approval_unable_start_status: '変更できません。ステータスは「%{status}」です。'
+  wiki_approval_unable_start_user: "同じユーザーを複数回指定することはできません。"
+  wiki_approval_unable_note: コメントが必要です
+  wiki_approval_add_user: ユーザーを追加
+  wiki_approval_add_step: ステップを追加
+  wiki_approval_and: AND
+  wiki_approval_or: OR
+  label_wiki_approval_workflow_plural: Wiki承認ワークフロー
+  label_wiki_approval_notifications: Wiki承認ワークフロー
+  wiki_approval_notifications_typ: "%{author} により %{typ} が更新されました。"
