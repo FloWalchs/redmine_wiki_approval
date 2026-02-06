@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class WikiApprovalWorkflowSteps < ApplicationRecord
+class WikiApprovalWorkflowSteps < ApplicationRecord 
   self.table_name = 'wiki_approval_workflow_steps'
 
   belongs_to :approval, class_name: 'WikiApprovalWorkflow', foreign_key: :wiki_approval_workflow_id,
@@ -10,22 +10,39 @@ class WikiApprovalWorkflowSteps < ApplicationRecord
 
   validates :step, :step_type, :status, presence: true
   validates :note, length: { maximum: 1000 }
-  validates :note, presence: true, if: :rejected?
+  validates :note, presence: true, if: :status_rejected?
 
   after_save :check_next_step
+  
+  if ActiveRecord::VERSION::MAJOR >= 7
+    # Rails 7.x und 8.x → positional arguments
+    enum :status, {
+      canceled: 5,    # one is rejected, all other canceled
+      unstarted: 15,  # planed for
+      pending: 20,    # in approval mode
+      rejected: 40,   # no approved
+      approved: 70,   # released
+    }, prefix: :status
 
-  enum :step_type, {
-    or: 0,
-    and: 1
-  }, prefix: true
+    enum :step_type, {
+      or: 0,
+      and: 1
+    }, prefix: true
+  else
+    # redmine 5.1
+    enum status: {
+      canceled: 5,    # one is rejected, all other canceled
+      unstarted: 15,  # planed for
+      pending: 20,    # in approval mode
+      rejected: 40,   # no approved
+      approved: 70,   # released
+    }, _prefix: true
 
-  enum :status, {
-    canceled: 5,    # one is rejected, all other canceled
-    unstarted: 15,  # planed for
-    pending: 20,    # in approval mode
-    rejected: 40,   # no approved
-    approved: 70,   # released
-  }
+    enum step_type: {
+      or: 0,
+      and: 1
+    }, _prefix: true
+  end
 
   scope :for_principal, ->(principal) {
     where(principal_id: principal.id, principal_type: principal.class.name)
@@ -64,7 +81,7 @@ class WikiApprovalWorkflowSteps < ApplicationRecord
 
   def self.check_all_steps_approved(approval)
     # when all steps ar approved or complete = done
-    if approval.approval_steps.all? { |s| s.approved? }
+    if approval.approval_steps.all? { |s| s.status_approved? }
       approval.update!(status: :released)
     end
   end
@@ -92,7 +109,7 @@ class WikiApprovalWorkflowSteps < ApplicationRecord
 
       # start next step if all approved
       current_step = approval.approval_steps.where(step: step)
-      if current_step.all? { |s| s.approved? }
+      if current_step.all? { |s| s.status_approved? }
         affected = approval.approval_steps.where(step: step + 1).update_all(status: :pending, updated_at: Time.current)
         WikiApprovalMailer.deliver_wiki_approval_step(approval, approval.wiki_page, User.current, step + 1) if affected.positive?
       end
@@ -103,21 +120,29 @@ class WikiApprovalWorkflowSteps < ApplicationRecord
   end
 
   def find_current_step_for_pending
+
     WikiApprovalWorkflowSteps
-       .where(wiki_approval_workflow_id: wiki_approval_workflow_id)
-       .where(status: ..(WikiApprovalWorkflowSteps.statuses[:pending]))
-       .where(step: ..step)
-       .order(step: :asc)
-       .limit(1)
-       .pick(:step)
+      .where(wiki_approval_workflow_id: wiki_approval_workflow_id)
+      .where('status <= ?', WikiApprovalWorkflowSteps.statuses[:pending])
+      .where('step <= ?', step)
+      .order(step: :asc)
+      .limit(1)
+      .pluck(:step)
+      .first
+
   end
 
   def current_step_delete_or
-    # OR-Logic: delete all <= pending from same stepNr
-    if step_type_or? && (approved? || approval.approval_steps.where(step: step, status: :approved).exists?)
-      approval.approval_steps.where(step: step)
-                             .where(status: ..(WikiApprovalWorkflowSteps.statuses[:pending]))
-                             .delete_all
-    end
+     # OR-Logic: delete all <= pending from same stepNr
+    return unless step_type_or? && (
+      status_approved? ||
+      approval.approval_steps.where(step: step, status: :approved).exists?
+    )
+
+    approval.approval_steps
+            .where(step: step)
+            .where('status <= ?', WikiApprovalWorkflowSteps.statuses[:pending])
+            .delete_all
   end
+
 end

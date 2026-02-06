@@ -46,6 +46,11 @@ module WikiApproval
         [@project, @project3].each do |project|
           project.enable_module! :wiki_approval
         end
+        Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_comment] = 'false'
+        Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_draft_enabled] = 'true'
+        Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_enabled] = 'project'
+        Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_required] = 'project'
+        Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_version] = 'true'
         @group = Group.first
       end
 
@@ -54,36 +59,82 @@ module WikiApproval
         @request.session[:user_id] = @user.id
         User.current = @user
       end
+
+      def teardown_method!
+        User.current = nil
+        Setting.clear_cache
+        Rails.cache.clear
+        I18n.locale = :en
+      end
+
     end
 
     class UnitCase < ActiveSupport::TestCase
+      self.use_transactional_tests = true
+      fixtures :all
+
       include WikiApproval::Test::PluginTestSetting
 
       def setup
         load_plugin_fixtures_in_order!
         load_default_values!
       end
+
+      def teardown
+        super
+        teardown_method!  
+      end
     end
 
-    class ControllerCase < ActionController::TestCase
+    class ControllerCase < Redmine::ControllerTest
+      self.use_transactional_tests = true
+      fixtures :all
+
       include WikiApproval::Test::PluginTestSetting
 
       def setup
         load_plugin_fixtures_in_order!
         load_default_values!
+      end
+
+      def teardown
+        super
+        teardown_method!         
       end
     end
 
     class IntegrationCase < Redmine::IntegrationTest
+      self.use_transactional_tests = true
+      fixtures :all
+
       include WikiApproval::Test::PluginTestSetting
 
       def setup
         load_plugin_fixtures_in_order!
         load_default_values!
       end
+
+      def teardown
+        super
+        teardown_method!  
+      end
     end
 
     class RoutingCase < Redmine::RoutingTest
+      self.use_transactional_tests = true
+      fixtures :all
+
+      include WikiApproval::Test::PluginTestSetting
+
+      def setup
+        load_plugin_fixtures_in_order!
+        load_default_values!
+      end
+
+      def teardown
+        super
+        teardown_method!  
+      end
     end
   end
 end

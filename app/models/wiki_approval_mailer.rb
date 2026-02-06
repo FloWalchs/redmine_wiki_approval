@@ -44,7 +44,7 @@ class WikiApprovalMailer < Mailer
     approval_principal_ids   = (approval_principal_ids | [approval&.author_id]).compact
 
     # Candidates: Project members + Watcher + Content.notified_users (if available)
-    member_users = membership_by_user_id.values.filter_map(&:user)
+    member_users = membership_by_user_id.values.map(&:user).compact
     extra_users  = (wiki_page.content&.notified_users || []) | User.where(id: watcher_user_ids.to_a).to_a
     candidates   = (member_users | extra_users).uniq
 

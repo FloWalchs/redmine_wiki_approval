@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class WikiApprovalWorkflow < ApplicationRecord
+class WikiApprovalWorkflow < ApplicationRecord 
   self.table_name = 'wiki_approval_workflows'
   attr_accessor :_status_changed_in_txn
 
@@ -15,14 +15,26 @@ class WikiApprovalWorkflow < ApplicationRecord
   after_update :mark_status_changed
   after_commit :notify_status_change, on: [:update]
 
-  enum :status, {
-    canceled: 5,
-    draft: 10,
-    pending: 20,
-    rejected: 40,
-    published: 60,
-    released: 70,
-  }
+  if ActiveRecord::VERSION::MAJOR >= 7
+    # Rails 7.x und 8.x → positional arguments
+    enum :status, {
+      canceled: 5,
+      draft: 10,
+      pending: 20,
+      rejected: 40,
+      published: 60,
+      released: 70,
+    }
+  else
+    enum status: {
+      canceled: 5,
+      draft: 10,
+      pending: 20,
+      rejected: 40,
+      published: 60,
+      released: 70,
+    }
+  end
 
   scope :by_author, ->(user_id) { where(author_id: user_id) }
   scope :for_wiki, ->(page_id, version_id) {
@@ -54,20 +66,25 @@ class WikiApprovalWorkflow < ApplicationRecord
   end
 
   def self.latest_public_from_version(page_id, from_version)
-    where(
+
+    record = where(
       wiki_page_id: page_id,
-      status: [statuses[:published], statuses[:released]],
-      wiki_version_id: ...from_version
+      status: [statuses[:published], statuses[:released]]
     )
+    .where('wiki_version_id < ?', from_version)
     .order(id: :desc)
-    .limit(1)
-    .pick(:wiki_version_id) || 1
+    .select(:wiki_version_id)
+    .first
+
+    record&.wiki_version_id || 1
+
   end
 
   def cancel_old_approvals
+    # find old workflows with < pending
     old_ids = WikiApprovalWorkflow
                 .where(wiki_page_id: wiki_page_id)
-                .where(wiki_version_id: ...wiki_version_id)
+                .where('wiki_version_id < ?', wiki_version_id)
                 .where(status: WikiApprovalWorkflow.statuses[:pending])
                 .pluck(:id)
 
@@ -76,7 +93,7 @@ class WikiApprovalWorkflow < ApplicationRecord
     ActiveRecord::Base.transaction do
       # old Approvals canceln
       WikiApprovalWorkflow.where(id: old_ids)
-                            .update_all(status: WikiApprovalWorkflow.statuses[:canceled])
+                          .update_all(status: WikiApprovalWorkflow.statuses[:canceled])
 
       # Steps canceln
       WikiApprovalWorkflowSteps.where(wiki_approval_workflow_id: old_ids)
@@ -138,7 +155,7 @@ class WikiApprovalWorkflow < ApplicationRecord
         desc << "\n\n#{I18n.t(:label_wiki_approval_step, default: 'Step')} #{step} #{step_type ? " - (#{step_type})" : ''}"
         steps.map do |s|
           desc << "\n* #{s.principal&.name}"
-          desc << " (#{I18n.t("wiki_approval_workflow_steps.status.#{s.status}", default: 'rejected')})" if s.rejected?
+          desc << " (#{I18n.t("wiki_approval_workflow_steps.status.#{s.status}", default: 'rejected')})" if s.status_rejected?
           desc << "\n #{s.note}" if s.note.present?
         end
       end

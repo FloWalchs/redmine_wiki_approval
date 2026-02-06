@@ -84,6 +84,7 @@ module RedmineWikiApproval
 
       loader.add_global_helper [
         WikiApprovalSettingsHelper,
+        WikiApprovalIconHelper,
         RedmineWikiApproval::Helpers
       ]
 

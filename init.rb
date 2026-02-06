@@ -9,7 +9,7 @@ Redmine::Plugin.register :redmine_wiki_approval do
   description 'A Redmine plugin that adds an approval workflow to the wiki, including drafts to ensure content quality before publication.'
   url 'https://github.com/FloWalchs/redmine_wiki_approval/'
   version RedmineWikiApproval::VERSION
-  requires_redmine :version_or_higher => '6.0.0'
+  requires_redmine :version_or_higher => '4.0.0'
 
   settings default: loader.default_settings,
            partial: 'settings/wiki_approval'

@@ -9,11 +9,38 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         ruby: ['3.2', '3.3', '3.4']
         redmine: ['6.1-stable', 'master']
         db: ['postgres', 'mysql']
-      fail-fast: false
+        include:
+          # Redmine 4.2 mit Ruby 2.6/2.7
+          - redmine: '4.2-stable'
+            ruby: '2.6'
+            db: 'postgres'
+          - redmine: '4.2-stable'
+            ruby: '2.6'
+            db: 'mysql'
+          - redmine: '4.2-stable'
+            ruby: '2.7'
+            db: 'postgres'
+          - redmine: '4.2-stable'
+            ruby: '2.7'
+            db: 'mysql'
+          # Redmine 5.1 mit Ruby 2.7/3.2
+          - redmine: '5.1-stable'
+            ruby: '2.7'
+            db: 'postgres'
+          - redmine: '5.1-stable'
+            ruby: '2.7'
+            db: 'mysql'
+          - redmine: '5.1-stable'
+            ruby: '3.2'
+            db: 'postgres'
+          - redmine: '5.1-stable'
+            ruby: '3.2'
+            db: 'mysql'
 
     services:
       postgres:
@@ -84,6 +111,12 @@ jobs:
         run: |
           cp plugins/redmine_wiki_approval/test/support/database-${{ matrix.db }}.yml config/database.yml
           cp plugins/redmine_wiki_approval/test/support/configuration.yml config/configuration.yml
+
+      - name: Patch Gemfile for Redmine 4.2 (blankslate)
+        if: matrix.redmine == '4.2-stable'
+        shell: bash
+        working-directory: redmine
+        run: grep -q "gem 'blankslate'" Gemfile || echo "gem 'blankslate', '~> 3.1.3'" >> Gemfile
 
       - name: Install Ruby dependencies
         working-directory: redmine

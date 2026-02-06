@@ -69,7 +69,7 @@ class WikiApprovalController < ApplicationController
           step_record = approval.approval_steps.for_principal(principal_object).find_or_initialize_by(step: step_nr)
 
           # Only set status to :unstarted if current status !approved
-          step_record.status = :unstarted if step_record.status.nil? || !step_record.approved?
+          step_record.status = :unstarted if step_record.status.nil? || !step_record.status_approved?
           step_record.step_type = params[:steps_typ][step_nr] || 'or'
           step_record.save! if step_record.changed?
         end
@@ -176,14 +176,26 @@ class WikiApprovalController < ApplicationController
   end
 
   def approval_user_options(project, autor_id)
-    # (Users + groups)
-    users = @project.memberships.filter_map(&:user).select do |u|
-      !u.admin? && u.id != autor_id && u.roles_for_project(@project).any? { |r| r.permissions.include?(:wiki_approval_grant) }
-    end
+    users  = []
+    groups = []
 
-    groups = @project.memberships.map(&:principal).select do |g|
-      g.is_a?(Group) && g.memberships.where(project_id: @project.id).any? do |m|
-        m.roles.any? { |r| r.permissions.include?(:wiki_approval_grant) }
+    project.memberships.each do |m|
+      # users
+      if (u = m.user)
+        next if u.admin? || u.id == autor_id
+        allowed = u.respond_to?(:allowed_to?) ?
+                    u.allowed_to?(:wiki_approval_grant, project) :
+                    u.roles_for_project(project).any? { |r| Array(r.permissions).include?(:wiki_approval_grant) }
+        users << u if allowed
+      end
+
+      # groups
+      if (p = m.principal).is_a?(Group)
+        has_permission =
+          p.memberships.where(project_id: project.id).any? do |gm|
+            gm.roles.any? { |r| Array(r.permissions).include?(:wiki_approval_grant) }
+          end
+        groups << p if has_permission
       end
     end
 
@@ -191,15 +203,32 @@ class WikiApprovalController < ApplicationController
   end
 
   def duplicate_users?(steps_params)
-    seen_users = Set.new
-    steps_params.each_value do |users|
-      users.each do |u|
-        user_id = u["principal_id"].to_i
-        return true if seen_users.include?(user_id)
+    require 'set'
 
-        seen_users.add(user_id)
+    # Defensiv: akzeptiere Hash oder Parameters
+    h =
+      if steps_params.is_a?(Hash)
+        steps_params
+      elsif steps_params.respond_to?(:to_unsafe_h)
+        steps_params.to_unsafe_h
+      else
+        # Fallback
+        steps_params
+      end
+
+    seen = Set.new
+
+    # Iteriere defensiv, ohne implizite Konvertierung zu triggern
+    values = h.is_a?(Hash) ? h.values : (steps_params.respond_to?(:values) ? steps_params.values : [])
+    values.each do |users|
+      Array(users).each do |u|
+        user_id = (u["principal_id"] || u[:principal_id]).to_i
+        next if user_id.zero?
+        return true if seen.include?(user_id)
+        seen.add(user_id)
       end
     end
+
     false
   end
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-class WikiApprovalSetting < ApplicationRecord
+class WikiApprovalSetting < ApplicationRecord 
+  self.table_name = 'wiki_approval_settings'
   belongs_to :project
   before_save :sync_data_hash_to_json
 

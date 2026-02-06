@@ -21,7 +21,7 @@
                     options_for_select([[l(:wiki_approval_or), 'or'], [l(:wiki_approval_and), 'and']], selected: step.step_type),
                     class: "step-typ" %>
                   <span class="add-user" data-step="<%= step_nr %>">
-                    <%= sprite_icon('add', l(:wiki_approval_add_user)) %>
+                    <%= rma_icon('add', l(:wiki_approval_add_user)) %>
                   </span><br>
                 <% end %>
             <% end %>
@@ -33,7 +33,7 @@
     <div>
       <p>
       <span id="add-step">
-        <%= sprite_icon('add', l(:wiki_approval_add_step)) %>
+        <%= rma_icon('add', l(:wiki_approval_add_step)) %>
       </span>
       </p>
     </div>
@@ -45,6 +45,36 @@
 <% end %>
 
 <script>
+
+  // get icon with label
+  function buildIconWithLabel(name, labelText) {
+    // 1) SVG-Version (Redmine 6.1+): serach a SVG in DOM
+    //    a) under #add-step,
+    //    b) or other <svg.icon-svg>  #icon--{name} 
+    const localSvg = document.querySelector(`#add-step svg.icon-svg use[href*="#icon--${name}"]`);
+    const globalSvg = document.querySelector(`svg.icon-svg use[href*="#icon--${name}"]`);
+    let iconNode;
+
+    if (localSvg || globalSvg) {
+      // Deep clone des <svg>
+      const svg = (localSvg || globalSvg).closest('svg');
+      iconNode = svg.cloneNode(true);
+    } else {
+      // fallback für Redmine 5.1: CSS-Icon
+      iconNode = document.createElement('span');
+      iconNode.className = `icon icon-${name}`;
+    }
+
+    // Label-Spanne
+    const label = document.createElement('span');
+    label.className = 'icon-label';
+    label.textContent = labelText;
+
+    // build
+    const frag = document.createDocumentFragment();
+    frag.append(iconNode, document.createTextNode(' '), label);
+    return frag;
+  }
 
   document.addEventListener('DOMContentLoaded', function() {
     const stepsContainer = document.getElementById('steps-container');
@@ -76,18 +106,21 @@
             <option value="and">${wiki_approval_and}</option>
           </select>
 
-          <span class="add-user" data-step="${stepCount}">
-            ${document.querySelector('#add-step svg').outerHTML}<span class="icon-label">${add_user}</span>
-          </span>
+          <span class="add-user" data-step="${stepCount}"></span>
         </p>
       `;
+
+      // Icon + Label add
+      const addUserSpan = newStep.querySelector('.add-user');
+      addUserSpan.appendChild(buildIconWithLabel('add', add_user));
+
       stepsContainer.appendChild(newStep);
       // blank value
       const newSelect = newStep.querySelector('select');
       newSelect.selectedIndex = 0;
     });
 
-    // Event Delegation für Add User
+    // Event Delegation for Add User
     stepsContainer.addEventListener('click', function(e) {
       if (e.target.closest('.add-user')) {
         const button = e.target.closest('.add-user');

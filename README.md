@@ -2,9 +2,8 @@
 
 [![build](https://github.com/FloWalchs/redmine_wiki_approval/actions/workflows/build.yml/badge.svg)](https://github.com/FloWalchs/redmine_wiki_approval/actions/workflows/build.yml)
 [![Last release](https://img.shields.io/github/v/release/FloWalchs/redmine_wiki_approval?label=latest%20release&logo=github&style=flat-square)](https://github.com/FloWalchs/redmine_wiki_approval/releases/latest)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/jgraichen/redmine_dashboard/test.yml?branch=main&logo=github&style=flat-square)](https://github.com/FloWalchs/redmine_wiki_approval/actions)
 [![Rate at redmine.org](http://img.shields.io/badge/rate%20at-redmine.org-blue.svg?style=flat-square)](http://www.redmine.org/plugins/redmine-wiki-approval)
-![Redmine](https://img.shields.io/badge/redmine->=6.0-blue?logo=redmine&logoColor=%23B32024&labelColor=f0f0f0&link=https%3A%2F%2Fwww.redmine.org)
+![Redmine](https://img.shields.io/badge/redmine->=4.1-blue?logo=redmine&logoColor=%23B32024&labelColor=f0f0f0&link=https%3A%2F%2Fwww.redmine.org)
 
 This plugin adds an approval workflow to the wiki, allowing teams to review, approve, and control changes before they are published. It supports drafts, multi‑step approval processes, role‑based permissions, and status tracking to ensure content quality and traceability in collaborative documentation.
 
@@ -26,17 +25,18 @@ This plugin does **not** replace Redmine's wiki versioning.
 - **Role-Based Permissions** – Control who can draft, approve, or publish
 - **Email Notifications** – Notifications for status and step changes
 - **Per‑Project or Global Settings** – Configure behavior globally or individually per project, such as enabling approval requirements, drafts, or mandatory comments.
+- **Mandatory Save Comment** – Requires users to enter a comment when saving Wiki content (configurable on/off)
 
 ## 🔐 Permissions Overview
 
-| Permission | Description |
-|-----------|-------------|
-| Manage Wiki approval | Configure workflow and settings |
-| Start approval | Begin approval workflow |
-| Grant approval | Approve a workflow step |
-| Forward approval | Move to the next approver |
-| View draft | View unpublished versions |
-| Create draft | Create unpublished wiki versions |
+| Permission           | Description                      |
+| -------------------- | -------------------------------- |
+| Manage Wiki approval | Configure workflow and settings  |
+| Start approval       | Begin approval workflow          |
+| Grant approval       | Approve a workflow step          |
+| Forward approval     | Move to another approver         |
+| View draft           | View unpublished versions        |
+| Create draft         | Create unpublished wiki versions |
 
 ## 💡 Typical Use Case
 
@@ -46,15 +46,15 @@ This plugin does **not** replace Redmine's wiki versioning.
 4. Once approved, the page becomes publicly visible
 5. Older versions remain accessible for audit and rollback
 
-## Internationalization
+## 🌐 Internationalization
 Supports 14+ languages including:
 - English, Japanese, German, French, Spanish, Italian
 - Portuguese, Russian, Korean, Chinese, and more
 
 ## 📋 Requirements
 
-- **Redmine**: 6.0.0 or higher
-- **Ruby**: 3.1 or higher
+- **Redmine**: 4.1 or higher
+- **Ruby**: 2.6 or higher
 - **Rails**: Compatible with Redmine's Rails version
 
 ## 🚀 Installation
@@ -64,7 +64,7 @@ cd $REDMINE_ROOT/plugins
 git clone https://github.com/FloWalchs/redmine_wiki_approval.git
 cd $REDMINE_ROOT
 bundle install
-rake redmine:plugins:migrate RAILS_ENV=production
+rake bundle exec rake redmine:plugins:migrate RAILS_ENV=production
 ```
 Restart your Redmine server to load the plugin.
 Enable the Module "Wiki approval" per project
@@ -76,13 +76,13 @@ Enable the Module "Wiki approval" per project
 2. Navigate to **Project Settings → Wiki approval**
    - enable the modul per project
 3. Available options:
-  - Wiki comment required 
-  - Wiki draft enabled
-  - Wiki approval enabled
-  - - Approval required
-  - - Approval workflow for next version (required)
+     - Wiki comment required 
+     - Wiki draft enabled
+     - Wiki approval enabled
+       - Approval required
+       - Approval workflow for next version (required)
 
-## Uninstall
+## ❌ Uninstall
 
 ```bash
 cd $REDMINE_ROOT

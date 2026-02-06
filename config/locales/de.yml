@@ -6,7 +6,7 @@ de:
   permission_wiki_approval_forward: Freigabe weiterleiten
   permission_wiki_draft_view: Entwurf anzeigen
   permission_wiki_draft_create: Entwurf erstellen
-  label_wiki_approval_settings_projects: 'Pro Projekt konfigurierbar'
+  label_wiki_approval_settings_projects: 'je Projekt konfigurierbar'
   label_wiki_approval_settings_comment: Wiki-Kommentar erforderlich
   label_wiki_approval_settings_required: Freigabe erforderlich
   label_wiki_approval_settings_version: Freigabe-Workflow für die nächste Version

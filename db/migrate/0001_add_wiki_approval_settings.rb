@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddWikiApprovalSettings < ActiveRecord::Migration[7.2]
+class AddWikiApprovalSettings < ActiveRecord::Migration[5.2]
   def self.up
     create_table :wiki_approval_settings do |t|
       t.references :project, null: false
