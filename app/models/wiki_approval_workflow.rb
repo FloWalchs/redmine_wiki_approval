@@ -13,7 +13,7 @@ class WikiApprovalWorkflow < ApplicationRecord
   after_create :cancel_old_approvals
 
   after_update :mark_status_changed
-  after_commit :notify_status_change, on: [:update]
+  after_commit :create_statuses_on_status_change
 
   if ActiveRecord::VERSION::MAJOR >= 7
     # Rails 7.x und 8.x → positional arguments
@@ -83,15 +83,15 @@ class WikiApprovalWorkflow < ApplicationRecord
   def cancel_old_approvals
     # find old workflows with < pending
     old_ids = WikiApprovalWorkflow
-                .where(wiki_page_id: wiki_page_id)
-                .where('wiki_version_id < ?', wiki_version_id)
-                .where(status: WikiApprovalWorkflow.statuses[:pending])
+            .where(wiki_page_id: wiki_page_id)
+            .where('wiki_version_id < ?', wiki_version_id)
+            .where(status: WikiApprovalWorkflow.statuses[:pending])
                 .pluck(:id)
 
     return if old_ids.empty?
 
     ActiveRecord::Base.transaction do
-      # old Approvals canceln
+      # old Approvals canceln, no after_update or after_commit with .update_all
       WikiApprovalWorkflow.where(id: old_ids)
                           .update_all(status: WikiApprovalWorkflow.statuses[:canceled])
 
@@ -108,99 +108,14 @@ class WikiApprovalWorkflow < ApplicationRecord
     self._status_changed_in_txn ||= saved_change_to_status?
   end
 
-  def notify_status_change
+  def create_statuses_on_status_change
     return unless self._status_changed_in_txn || saved_change_to_status?
-    # only if higher then pending, no draft, no canceled
-    return unless self.class.statuses[status] >= self.class.statuses[:pending]
 
-    WikiApprovalMailer.deliver_wiki_approval_state(self, wiki_page, User.current)
+    WikiApprovalWorkflowStatus.create!(
+      wiki_approval_workflow_id: self.id,
+      status: self.class.statuses[status]
+    )
+
   end
 
-  def project
-    wiki_page.wiki.project
-  end
-
-  def event_group
-    "wiki_page:#{wiki_page_id}"
-  end
-
-  # activity how it look like
-  acts_as_event \
-    title: ->(o) do
-      label    = I18n.t(:label_wiki_approval_workflow, default: 'Approval workflow')
-      ver_num  = o.wiki_version_id
-      "Wiki-#{label}: #{o.wiki_page.title} #{ver_num ? " (##{ver_num})" : ''}"
-    end,
-    author:      :author,
-    description: ->(o) do
-      ver_num = o.wiki_version_id
-      version_from = WikiApprovalWorkflow.latest_public_from_version(o.wiki_page_id, o.wiki_version_id)
-      diff_path = "/projects/#{o.wiki_page.project.identifier}/wiki/#{ERB::Util.url_encode(o.wiki_page.title)}/diff" \
-                  "?version=#{ver_num}&version_from=#{version_from}"
-      desc = +""
-      desc << "#{I18n.t("wiki_approval_workflow.status.#{o.status}", default: o.status)} · "
-      if Setting.text_formatting == 'textile'
-        desc << "(\"#{I18n.t(:label_diff)}\":#{diff_path})"
-      else
-        desc << "(<a href=\"#{diff_path}\">#{I18n.t(:label_diff)}</a>)"
-      end
-      desc << "\n\n#{o.note}" if o.note.present?
-
-      grouped = o.approval_steps.group_by(&:step)
-      # grouped sorted Step-Nr
-      grouped.sort_by { |step, _| step.to_i }.map do |step, steps|
-        step_type = I18n.t("wiki_approval_#{steps.first&.step_type}", default: '')
-        # Step 1* User 1* User 2
-        # Step 2* User 3* User 4
-        desc << "\n\n#{I18n.t(:label_wiki_approval_step, default: 'Step')} #{step} #{step_type ? " - (#{step_type})" : ''}"
-        steps.map do |s|
-          desc << "\n* #{s.principal&.name}"
-          desc << " (#{I18n.t("wiki_approval_workflow_steps.status.#{s.status}", default: 'rejected')})" if s.status_rejected?
-          desc << "\n #{s.note}" if s.note.present?
-        end
-      end
-
-      desc.html_safe
-    end,
-    datetime:    :updated_at,
-    project: ->(o) { o.wiki_page.wiki.project },
-    url: ->(o) do
-      {
-        controller:  'wiki',
-        action:      'show',
-        project_id:  o.wiki_page.wiki.project,
-        id:          o.wiki_page.title,
-        version:     o.wiki_version_id
-      }.compact
-    end,
-    group: ->(o) { "wiki_page:#{o.wiki_page_id}" }
-
-  # activity which entrys filtering
-  acts_as_activity_provider \
-    type:       'wiki_approval_workflow',
-    permission: :wiki_draft_view,
-    author_key: :author_id,
-    timestamp:  :updated_at,
-    scope: proc { |options = {}, _user = nil|
-      rel = joins(wiki_page: { wiki: :project })
-            .includes(wiki_page: { wiki: :project })
-
-      if (project = options[:project]).present?
-        ids = options[:with_subprojects] ? project.self_and_descendants.select(:id) : project.id
-        rel = rel.where(projects: { id: ids })
-      elsif options[:projects].present?
-        rel = rel.where(projects: { id: Array(options[:projects]).map(&:id) })
-      end
-
-      from, to = options.values_at(:from, :to)
-      if from && to
-        rel = rel.where(updated_at: from..to)
-      elsif from
-        rel = rel.where(arel_table[:updated_at].gteq(from))
-      elsif to
-        rel = rel.where(arel_table[:updated_at].lteq(to))
-      end
-
-      rel.order(:wiki_page_id, wiki_version_id: :desc)
-    }
 end

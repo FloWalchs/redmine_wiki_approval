@@ -25,7 +25,7 @@ class WikiApprovalActivityControllerTest < WikiApproval::Test::ControllerCase
     )
     assert_response :success
     assert_select 'feed' do
-      assert_select 'entry', :count => 2
+      assert_select 'entry', :count => 5
       assert_select 'link[rel=self][href=?]', 'http://test.host/activity.atom?show_wiki_approval_workflow=1&with_subprojects=0'
       assert_select 'link[rel=alternate][href=?]', 'http://test.host/activity?show_wiki_approval_workflow=1&with_subprojects=0'
       assert_select 'entry' do
@@ -59,7 +59,7 @@ class WikiApprovalActivityControllerTest < WikiApproval::Test::ControllerCase
     )
     assert_response :success
     assert_select 'feed' do
-      assert_select 'entry', :count => 3
+      assert_select 'entry', :count => 6
       assert_select 'entry' do
         assert_select 'link[href=?]', 'http://test.host/projects/subproject1/wiki/Subproject_Page/1'
         assert_select 'link[href=?]', 'http://test.host/projects/ecookbook/wiki/Page_with_sections/3'

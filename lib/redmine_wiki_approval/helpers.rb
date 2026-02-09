@@ -23,8 +23,6 @@ module RedmineWikiApproval
         'badge-private'
       when 'released', 'published'
         'badge-status-closed'
-      else
-        'badge-count'
       end
     end
   end

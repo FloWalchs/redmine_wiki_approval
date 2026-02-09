@@ -30,7 +30,7 @@ Redmine::Plugin.register :redmine_wiki_approval do
       icon: 'wiki-page',
       html: { class: 'icon icon-wiki-page' }
 
-  activity_provider :wiki_approval_workflow, :class_name => 'WikiApprovalWorkflow', :default => false
+  activity_provider :wiki_approval_workflow, :class_name => 'WikiApprovalWorkflowStatus', :default => false
 end
 
 RedminePluginKit::Loader.persisting do

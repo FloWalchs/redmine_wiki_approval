@@ -133,10 +133,11 @@ jobs:
           bundle exec rake generate_secret_token
           bundle exec rake db:create db:migrate redmine:plugins:migrate
 
-      - name: Run tests
+      - name: Run tests with coverage
         env:
           RAILS_ENV: test
           MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
+          COVERAGE: "1"
         working-directory: redmine
         run: bundle exec rake redmine:plugins:test NAME=redmine_wiki_approval
 
@@ -146,3 +147,10 @@ jobs:
           MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
         working-directory: redmine
         run: bundle exec rake redmine:plugins:migrate NAME=redmine_wiki_approval VERSION=0
+        
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+        

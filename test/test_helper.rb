@@ -2,9 +2,27 @@
 
 if ENV['COVERAGE']
   require 'simplecov'
+  require 'simplecov-cobertura'
+
+  SimpleCov.coverage_dir 'coverage'
+
+  SimpleCov.formatters = [
+    SimpleCov::Formatter::HTMLFormatter,
+    SimpleCov::Formatter::CoberturaFormatter
+  ]
+
   SimpleCov.start :rails do
     add_filter 'init.rb'
-    root File.expand_path "#{File.dirname __FILE__}/.."
+    root File.expand_path("#{File.dirname __FILE__}/..")
+  end
+
+  # Cobertura-XML at the end
+  at_exit do
+    result = SimpleCov.result
+    # Cobertura-file
+    SimpleCov::Formatter::CoberturaFormatter.new.format(result)
+    # html also
+    SimpleCov::Formatter::HTMLFormatter.new.format(result)
   end
 end
 
@@ -22,7 +40,7 @@ module WikiApproval
         ActiveRecord::FixtureSet.reset_cache
         ActiveRecord::FixtureSet.create_fixtures(
           PLUGIN_FIXTURES_DIR,
-          %w[wiki_approval_workflows wiki_approval_workflow_steps wiki_approval_settings]
+          %w[wiki_approval_workflows wiki_approval_workflow_steps wiki_approval_settings wiki_approval_workflow_statuses]
         )
       end
 

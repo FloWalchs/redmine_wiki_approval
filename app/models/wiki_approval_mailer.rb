@@ -6,7 +6,7 @@ require 'mailer'
 class WikiApprovalMailer < Mailer
   layout 'mailer'
 
-  def self.deliver_wiki_approval_state(approval, wiki_page, actor)
+  def self.deliver_wiki_approval_state(approval, status, wiki_page, actor)
     return unless Setting.notified_events.include?('wiki_approval_notifications')
 
     project = wiki_page.project
@@ -18,27 +18,18 @@ class WikiApprovalMailer < Mailer
     # author current version
     current_author_id  = wiki_page.content&.author_id
 
-    # Approval Participation: Author + Principals in Steps
-    approval_principal_ids = approval.approval_steps.where.not(status: WikiApprovalWorkflowSteps.statuses[:unstarted])
-            .distinct
-            .pluck(:principal_id)
-            .compact
-            .to_set
-
+    # Approval Principals in Steps, groups to userids
     approval_principal_ids = approval.approval_steps
       .where.not(status: WikiApprovalWorkflowSteps.statuses[:unstarted])
-      .includes(principal: :users)   # Users für Groups vorladen
-      .flat_map do |step|
+      .each_with_object([]) do |step, acc|
         principal = step.principal
-
         case principal
         when User
-          principal.id
+          acc << principal.id
         when Group
-          principal.user_ids
+          acc.concat(principal.user_ids)
         end
       end
-      .compact
       .uniq
 
     approval_principal_ids   = (approval_principal_ids | [approval&.author_id]).compact
@@ -79,7 +70,7 @@ class WikiApprovalMailer < Mailer
     recipients.uniq
 
     recipients.each do |user|
-      wiki_approval(user, approval, wiki_page, actor, I18n.t("field_status", default: "status")).deliver_later
+      wiki_approval(user, approval, status, wiki_page, actor, I18n.t("field_status", default: "status")).deliver_later
     end
   end
 
@@ -88,18 +79,15 @@ class WikiApprovalMailer < Mailer
 
     approval_principal_ids = approval.approval_steps
       .where(status: WikiApprovalWorkflowSteps.statuses[:pending])
-      .includes(principal: :users)   # Users für Groups vorladen
-      .flat_map do |step|
+      .each_with_object([]) do |step, acc|
         principal = step.principal
-
         case principal
         when User
-          principal.id
+          acc << principal.id
         when Group
-          principal.user_ids
+          acc.concat(principal.user_ids)
         end
       end
-      .compact
       .uniq
 
     recipients = User
@@ -109,11 +97,12 @@ class WikiApprovalMailer < Mailer
       .select { |u| u.mail.present? }
 
     recipients.each do |user|
-      wiki_approval(user, approval, wiki_page, actor, "#{I18n.t(:label_wiki_approval_step, default: 'Step')} #{step}").deliver_later
+      wiki_approval(user, approval, approval.status, wiki_page, actor, "#{I18n.t(:label_wiki_approval_step, default: 'Step')} #{step}").deliver_later
     end
   end
 
-  def wiki_approval(user, approval, wiki_page, actor, type)
+  def wiki_approval(user, approval, status, wiki_page, actor, type)
+
     ver_num = approval.wiki_version_id
     project = wiki_page.project
     last_public = WikiApprovalWorkflow.latest_public_from_version(approval.wiki_page_id, approval.wiki_version_id)
@@ -121,9 +110,9 @@ class WikiApprovalMailer < Mailer
     redmine_headers 'Project' => project,
                     'Wiki-Page-Id' => wiki_page.id,
                     'Wiki-Version' => approval.wiki_version_id,
-                    'Approval-State'=> approval.status
+                    'Approval-State'=> status
 
-    subject = "[#{project.name} - #{wiki_page.title}] (#{I18n.t("wiki_approval_workflow.status.#{approval.status}", default: approval.status)}) " \
+    subject = "[#{project.name} - #{wiki_page.title}] (#{I18n.t("wiki_approval_workflow.status.#{status}", default: status)}) " \
               "#{I18n.t("label_wiki_approval_notifications", default: "approval")}"
 
     @type = type
@@ -134,7 +123,7 @@ class WikiApprovalMailer < Mailer
     @wiki_page_url = url_for(:controller => 'wiki', :action => 'show', :project_id => project, :id => wiki_page.title, :version => ver_num)
     @diff_url =      url_for(:controller => 'wiki', :action => 'diff', :project_id => project, :id => wiki_page.title, :version => ver_num, :version_from => last_public)
 
-    mail :to => user,
+    mail :to => user.mail,
          :subject => subject
   end
 end
