@@ -48,9 +48,10 @@ This plugin does **not** replace Redmine's wiki versioning.
 5. Older versions remain accessible for audit and rollback
 
 ## 🌐 Internationalization
-Supports 14+ languages including:
-- English, Japanese, German, French, Spanish, Italian
-- Portuguese, Russian, Korean, Chinese, and more
+The plugin supports 14+ languages, including English, German, Japanese, French, Spanish, and more.
+- <u>Full Support:</u> English and German are currently the primary maintained languages.
+- <u>Experimental:</u> Other languages are currently in an experimental state.
+- <u>Contribute:</u> Pull Requests to improve or add translations for your language are highly welcome!
 
 ## 📋 Requirements
 
@@ -82,6 +83,57 @@ Enable the Module "Wiki approval" per project
      - Wiki approval enabled
        - Approval required
        - Approval workflow for next version (required)
+
+## 🖼️ Screenshots
+
+<div align="left">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="./docs/screenshots/ProjectSettings.png" width="175px" />
+        <br>
+        <sub><b>Project Settings</b></sub>
+      </td>
+      <td align="center">
+        <img src="./docs/screenshots/EditPage.png" width="175px" />
+        <br>
+        <sub><b>Page Edit</b></sub>
+      </td>
+      <td align="center">
+        <img src="./docs/screenshots/Draft.png" width="175px" />
+        <br>
+        <sub><b>Draft created</b></sub>
+      </td>
+      <td align="center">
+        <img src="./docs/screenshots/StartApproval.png" width="175px" />
+        <br>
+        <sub><b>Start approval</b></sub>
+      </td>
+   </tr>
+   <tr>
+      <td align="center">
+        <img src="./docs/screenshots/InApproval.png" width="175px" />
+        <br>
+        <sub><b>in Approval</b></sub>
+      </td>
+      <td align="center">
+        <img src="./docs/screenshots/GrantApproval.png" width="175px" />
+        <br>
+        <sub><b>Grant Approval</b></sub>
+      </td>
+      <td align="center">
+        <img src="./docs/screenshots/ApprovedStep1.png" width="175px" />
+        <br>
+        <sub><b>Approved step 1</b></sub>
+      </td>
+      <td align="center">
+        <img src="./docs/screenshots/Released.png" width="175px" />
+        <br>
+        <sub><b>Released, all steps are approved</b></sub>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ## ❌ Uninstall
 

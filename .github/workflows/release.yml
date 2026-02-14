@@ -1,0 +1,31 @@
+name: release
+on:
+  push:
+    branches-ignore:
+      - '**'
+    tags:
+      - '**'
+permissions:
+  contents: write
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set version
+        id: version
+        run: |
+          REPOSITORY=$(echo ${{ github.repository }} | sed -e "s#.*/##")
+          VERSION=$(echo ${{ github.ref }} | sed -e "s#refs/tags/##g")
+          echo "version=$VERSION" >> $GITHUB_ENV
+          echo "filename=$REPOSITORY-$VERSION" >> $GITHUB_ENV
+          echo "plugin=$REPOSITORY" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
+      - name: Archive
+        run: |
+          cd ..; zip -r ${{ env.filename }}.zip ${{ env.plugin }}/ -x "*.git*" "*/docs/*" "*/test/*"
+          mv ${{ env.filename }}.zip ${{ env.plugin }}/
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: ${{ env.filename }}.zip
