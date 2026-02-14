@@ -16,36 +16,8 @@ class WikiApprovalWorkflowStatus < ApplicationRecord
     timestamp: "#{table_name}.created_at",
     permission: :wiki_draft_view,
     scope: proc { |options = {}, _user = nil|
-      rel =
-        joins(wiki_approval_workflow: { wiki_page: { wiki: :project } })
-          .includes(wiki_approval_workflow: { wiki_page: { wiki: :project } })
-
-      # --- Project-/Subproject-Filter ---
-      if (project = options[:project]).present?
-        if options[:with_subprojects]
-          # IDs all subs + project
-          ids = project.self_and_descendants.select(:id)
-          rel = rel.where(projects: { id: ids })
-        else
-          rel = rel.where(projects: { id: project.id })
-        end
-      elsif options[:projects].present?
-        # a list of projects
-        rel = rel.where(projects: { id: Array(options[:projects]).map(&:id) })
-      end
-
-      # --- time filter 
-      from, to = options.values_at(:from, :to)
-      if from && to
-        rel = rel.where(arel_table[:created_at].between(from..to))
-      elsif from
-        rel = rel.where(arel_table[:created_at].gteq(from))
-      elsif to
-        rel = rel.where(arel_table[:created_at].lteq(to))
-      end
-
-      # --- new on first
-      rel.order(created_at: :desc)
+      joins(wiki_approval_workflow: { wiki_page: { wiki: :project } })
+        .includes(wiki_approval_workflow: { wiki_page: { wiki: :project } })
     }
 
   acts_as_event \
@@ -54,7 +26,6 @@ class WikiApprovalWorkflowStatus < ApplicationRecord
     author:      :author,
     description: ->(o) { I18n.t("wiki_approval_workflow.status.#{WikiApprovalWorkflow.statuses.invert[o.status]}", default: o.status) },
     datetime:    :created_at,
-    project: ->(o) { o.wiki_approval_workflow&.wiki_page&.wiki&.project },
     url: ->(o) do
       {
         controller:  'wiki',
@@ -63,8 +34,7 @@ class WikiApprovalWorkflowStatus < ApplicationRecord
         id:          o.wiki_approval_workflow&.wiki_page&.title,
         version:     o.wiki_approval_workflow&.wiki_version_id
       }.compact
-    end,
-    group: ->(o) { "wiki_page:#{o.wiki_approval_workflow&.wiki_page_id}" }
+    end
 
   def project
     wiki_approval_workflow&.wiki_page&.wiki&.project

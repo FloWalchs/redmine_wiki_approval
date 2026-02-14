@@ -20,7 +20,6 @@ class WikiApprovalSettingsController < ApplicationController
       flash[:notice] = l(:notice_successful_update)
     rescue => e
       flash[:error] = "Updating failed." + e.message
-      throw e
     end
 
     redirect_to :controller => 'projects', :action => "settings", :id => @project, :tab => 'wiki_approval'

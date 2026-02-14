@@ -9,6 +9,7 @@ class WikiApprovalWorkflow < ApplicationRecord
   belongs_to :author, class_name: 'User'
 
   has_many :approval_steps, class_name: 'WikiApprovalWorkflowSteps', dependent: :destroy, inverse_of: :approval
+  has_many :approval_statuses, class_name: 'WikiApprovalWorkflowStatus', dependent: :destroy
   validates :status, presence: true
   after_create :cancel_old_approvals
 

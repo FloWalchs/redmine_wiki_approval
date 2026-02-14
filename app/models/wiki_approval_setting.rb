@@ -96,7 +96,4 @@ class WikiApprovalSetting < ApplicationRecord
     self.json_data = @data_hash.to_json if @data_hash
   end
 
-  def wiki_approval_setting_params
-    params.require(:wiki_approval_setting).permit(:wiki_comment_required, :wiki_draft_enabled, :wiki_approval_enabled, :wiki_approval_required, :wiki_approval_version_required)
-  end
 end

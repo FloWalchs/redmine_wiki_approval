@@ -326,4 +326,152 @@ class WikiApprovalControllerTest < WikiApproval::Test::ControllerCase
     approval.reload
     assert_equal 'canceled', approval.status
   end
+
+  test "should redirect to page status released" do
+    @page = WikiPage.find_by(id: 11)
+    approval = WikiApprovalWorkflow.find_by(wiki_page_id: @page.id, wiki_version_id:  @page.content.version)
+    approval.status = :released
+    approval.save!
+    post :start_approval, params: {
+      project_id: @project.id,
+      title: @page.title,
+      version: @page.content.version,
+      steps: { "1" => [{ "principal_id" => @user.id.to_s }] },
+      steps_typ: { "1" => "or" },
+      note: "redirect"
+    }
+    assert_response :redirect
+    assert_includes flash[:error], I18n.t(:wiki_approval_unable_start_status, :status => I18n.t("wiki_approval_workflow.status.released"))
+  end
+
+  test "should forward format js template" do
+
+    approval = WikiApprovalWorkflow.create!(
+      wiki_page_id: @page.id,
+      wiki_version_id: @page.content.version,
+      status: :draft,
+      author_id: @user.id
+    )
+    step1 = approval.approval_steps.for_principal(@user).find_or_initialize_by(step: 1)
+    step1.status = :pending
+    step1.save!
+
+    get :forward_approval, params: {
+      project_id: @project.id,
+      title: @page.title,
+      version: @page.content.version,
+      step_id: step1.id
+    }, xhr: true
+
+    assert_response :success
+    assert_equal 'text/javascript', @response.media_type
+    assert_match 'Forward approval', @response.body
+
+    options_count = @response.body.scan('<\/option>').size
+    assert_equal 4, options_count
+
+    assert_match 'Dave Lopper', @response.body
+  end
+
+
+  test "should grant format js template" do
+
+    approval = WikiApprovalWorkflow.create!(
+      wiki_page_id: @page.id,
+      wiki_version_id: @page.content.version,
+      status: :draft,
+      author_id: @user.id
+    )
+    step1 = approval.approval_steps.for_principal(@user).find_or_initialize_by(step: 1)
+    step1.status = :pending
+    step1.save!
+
+    get :grant_approval, params: {
+      project_id: @project.id,
+      title: @page.title,
+      version: @page.content.version,
+      step_id: step1.id
+    }, xhr: true
+
+    assert_response :success
+    assert_equal 'text/javascript', @response.media_type
+    assert_match I18n.t(:label_wiki_approval_settings_enabled), @response.body
+
+  end
+
+  test "should return 404 no page" do
+    get :start_approval, params: { project_id: @project.id, title: 'not found', version: @page.content.version }
+    assert_response :not_found 
+  end
+
+  test "should forward approval get group" do
+    member = Member.new(project: @project, principal: @group)
+    member.roles << @manager_role
+    member.save!
+
+    approval = WikiApprovalWorkflow.create!(
+      wiki_page_id: @page.id,
+      wiki_version_id: @page.content.version,
+      status: :draft,
+      author_id: @user.id
+    )
+    step1 = approval.approval_steps.for_principal(@user).find_or_initialize_by(step: 1)
+    step1.status = :pending
+    step1.save!
+
+    get :forward_approval, params: {
+      project_id: @project.id,
+      title: @page.title,
+      version: @page.content.version,
+      step_id: step1.id
+    }, xhr: true
+
+    assert_response :success
+    assert_equal 'text/javascript', @response.media_type
+    assert_match 'A Team', @response.body
+    assert_match 'Dave Lopper', @response.body
+
+  end
+
+  test "should reject approval group cancel old" do
+    set_session_user(User.find_by(id: 8))
+    member = Member.new(project: @project, principal: @group)
+    member.roles << @manager_role
+    member.save!
+
+    approval = WikiApprovalWorkflow.create!(
+      wiki_page_id: @page.id,
+      wiki_version_id: @page.content.version,
+      status: :pending,
+      author_id: @admin.id
+    )
+    step = approval.approval_steps.for_principal(@dlopper).find_or_initialize_by(step: 1)
+    step.status = :pending
+    step.step_type = 1
+    step.save!
+
+    step2 = approval.approval_steps.for_principal(@group).find_or_initialize_by(step: 1)
+    step2.status = :pending
+    step2.step_type = 1
+    step2.save!
+
+    post :grant_approval, params: {
+      project_id: @project.id,
+      title: @page.title,
+      version: @page.content.version,
+      step_id: step2.id,
+      note: "Looks bad",
+      status: "rejected"
+    }
+
+    assert_response :redirect
+    step2.reload
+    assert_equal 'rejected', step2.status
+    assert_equal 'Looks bad', step2.note
+    step.reload
+    assert_equal 'canceled', step.status
+    approval.reload
+    assert_equal 'rejected', approval.status
+  end
+
 end

@@ -60,6 +60,7 @@ module WikiApproval
           role.add_permission! :wiki_draft_create
         end
         @project = Project.find 1
+        @project2 = Project.find 2
         @project3 = Project.find 3
         [@project, @project3].each do |project|
           project.enable_module! :wiki_approval

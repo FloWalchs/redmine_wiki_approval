@@ -11,7 +11,6 @@ module RedmineWikiApproval
         prepend InstanceOverwriteMethods
 
         after_action :wiki_approval_save, only: [:update]
-        after_action :wiki_approval_delete, only: [:destroy_version]
         append_before_action :set_wiki_approval_data, only: [:show, :edit]
       end
 
@@ -32,11 +31,6 @@ module RedmineWikiApproval
             setting: setting,
             step_approval: WikiApprovalWorkflowSteps.first_pending_step_for(approval, User.current, @project, params[:step_id])
           }
-        end
-
-        def wiki_approval_delete
-          # delete a page version, also delets all approval and approvalsteps
-          WikiApprovalWorkflow.for_wiki(@page.id, params[:version].to_i).first&.destroy
         end
 
         def wiki_approval_save

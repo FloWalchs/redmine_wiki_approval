@@ -176,7 +176,6 @@ class WikiApprovalMailNotificationsTest < WikiApproval::Test::UnitCase
 
   end
 
-
   def test_step_mail_next
 
     Member.create!(project: @project, principal: @rhill, roles: [@developer_role])
@@ -204,6 +203,83 @@ class WikiApprovalMailNotificationsTest < WikiApproval::Test::UnitCase
     mail = deliveries.last
     assert_mail_body_match 'In approval', mail
     assert_mail_body_match 'Approved', mail
+
+  end
+
+  def test_status_mail_notify_selected_project
+
+    Member.create!(project: @project, principal: @rhill, roles: [@developer_role])
+    # 1. Globaler Schalter (hast du schon)
+    @rhill.update!(mail_notification: 'selected')
+
+    # 2. Die "Liste" pflegen (das ist die Member-Tabelle)
+    member = Member.where(user_id: @rhill.id, project_id: @project.id).first
+    member.update!(mail_notification: true) 
+
+    approval = WikiApprovalWorkflow.find_by(id: 1)
+
+    perform_enqueued_jobs do
+      WikiApprovalMailer.deliver_wiki_approval_state(approval, approval.status, approval.wiki_page, approval.author)
+    end
+
+    deliveries = ActionMailer::Base.deliveries
+    assert_equal 2, deliveries.size
+
+    to_set = deliveries.flat_map { |m| Array(m.to) }.to_set
+    expected_set = Set['jsmith@somenet.foo', 'rhill@somenet.foo']
+    assert_equal expected_set, to_set
+
+  end
+
+  def test_step_mail_next_group
+
+    user = User.find(9)
+    @group.users << user
+    Member.create!(project: @project, principal: @group, roles: [@developer_role])
+    approval = WikiApprovalWorkflow.find_by(id: 2)
+
+    step1 = approval.approval_steps.for_principal(@group).find_or_initialize_by(step: 2)
+    step1.status = :unstarted
+    step1.step_type = 1
+    step1.save!
+
+    perform_enqueued_jobs do
+      step2 = approval.approval_steps.for_principal(@dlopper).find_or_initialize_by(step: 1)
+      step2.status = :approved
+      step2.step_type = 1
+      step2.save!
+    end
+
+    deliveries = ActionMailer::Base.deliveries
+    assert_equal 2, deliveries.size
+
+    to_set = deliveries.flat_map { |m| Array(m.to) }.to_set
+    expected_set = Set["miscuser8@foo.bar", "miscuser9@foo.bar"]
+    assert_equal expected_set, to_set
+
+  end
+
+  def test_status_mail_step1_two_group
+
+    user = User.find(9)
+    @group.users << user
+    Member.create!(project: @project, principal: @group, roles: [@developer_role])
+    approval = WikiApprovalWorkflow.find_by(id: 2)
+
+    step = approval.approval_steps.for_principal(@group).find_or_initialize_by(step: 1)
+    step.status = :pending
+    step.save!
+
+    perform_enqueued_jobs do
+      WikiApprovalMailer.deliver_wiki_approval_state(approval, approval.status, approval.wiki_page, approval.author)
+    end
+
+    deliveries = ActionMailer::Base.deliveries
+    assert_equal 4, deliveries.size
+
+    to_set = deliveries.flat_map { |m| Array(m.to) }.to_set
+    expected_set = Set["miscuser8@foo.bar", "miscuser9@foo.bar", "jsmith@somenet.foo", "dlopper@somenet.foo"]
+    assert_equal expected_set, to_set
 
   end
 

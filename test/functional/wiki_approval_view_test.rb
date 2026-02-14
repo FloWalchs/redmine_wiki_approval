@@ -53,4 +53,103 @@ class WikiApprovalViewTest < WikiApproval::Test::ControllerCase
     # workflow forward icon
     assert_select 'div#content div.contextual a.icon.icon-forward[href*="wiki_approval/Page_with_sections/3/forward/2"]'
   end
+
+  test 'wiki page Unauthorized pending version no permission draft view' do
+    set_session_user(@dlopper)
+    RedmineWikiApproval.stubs(:view_draft?).with(@project).returns(false)
+    get :show, params: { project_id: @project.id, id: @page.title, version: 3 }
+    assert_response :forbidden  
+  end
+
+  test 'wiki page show draft version and badge' do
+    content = @page.content
+    content.text = "New Version"
+    content.save! 
+    
+    WikiApprovalWorkflow.create!(
+      wiki_page_id: @page.id,
+      wiki_version_id: @page.content.version,
+      status: :draft,
+      author_id: User.current.id
+    )
+
+    get :show, params: { project_id: @project.id, id: @page.title, version: @page.content.version }
+    assert_response :success
+
+    # link to published version, under contextual
+    assert_select 'div#content div.contextual a.icon.icon-workflows[href*="wiki/Page_with_sections/2"]'
+    assert_match 'Draft', @response.body
+    assert_match 'Published version', @response.body
+
+    # open badge
+    assert_select 'div#content div.contextual span.badge.badge-status-locked'
+  end
+
+  test 'wiki page show reject version and badge' do
+    content = @page.content
+    content.text = "New Version"
+    content.save! 
+    
+    WikiApprovalWorkflow.create!(
+      wiki_page_id: @page.id,
+      wiki_version_id: @page.content.version,
+      status: :rejected,
+      author_id: User.current.id
+    )
+
+    get :show, params: { project_id: @project.id, id: @page.title, version: @page.content.version }
+    assert_response :success
+
+    # link to published version, under contextual
+    assert_select 'div#content div.contextual a.icon.icon-workflows[href*="wiki/Page_with_sections/2"]'
+    assert_match 'Rejected', @response.body
+    assert_match 'Published version', @response.body
+
+    # open badge
+    assert_select 'div#content div.contextual span.badge.badge-private'
+  end 
+
+  test 'wiki delete page also approval' do
+
+    # any workflows?
+    approvals = WikiApprovalWorkflow.where(wiki_page_id: @page.id)
+    assert approvals.any?
+    approvals.each do |workflow|
+      assert_not_equal 0, workflow.approval_steps.count
+      assert_not_equal 0, workflow.approval_statuses.count
+    end
+
+    delete :destroy, params: { project_id: @project.id, id: @page.title, version: @page.content.version }
+    assert_response :redirect
+
+    approvals.reload
+    assert_equal 0, approvals.count
+    approvals.each do |workflow|
+      assert_equal 0, workflow.approval_steps.count
+      assert_equal 0, workflow.approval_statuses.count
+    end
+
+  end 
+
+  test 'wiki delete content version also approval' do
+
+    # any workflows?
+    approvals = WikiApprovalWorkflow.where(wiki_page_id: @page.id, wiki_version_id: @page.content.version)
+    assert approvals.any?
+    approvals.each do |workflow|
+      assert_not_equal 0, workflow.approval_steps.count
+      assert_not_equal 0, workflow.approval_statuses.count
+    end
+
+    delete :destroy_version, params: { project_id: @project.id, id: @page.title, version: @page.content.version }
+    assert_response :redirect
+
+    approvals.reload
+    assert_equal 0, approvals.count
+    approvals.each do |workflow|
+      assert_equal 0, workflow.approval_steps.count
+      assert_equal 0, workflow.approval_statuses.count
+    end
+
+  end 
 end

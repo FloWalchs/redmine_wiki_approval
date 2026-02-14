@@ -80,7 +80,9 @@ module RedmineWikiApproval
 
     def setup
       loader.add_patch %w[ProjectsHelper
-                          WikiController]
+                          WikiController
+                          WikiContentVersion
+                          WikiPage]
 
       loader.add_global_helper [
         WikiApprovalSettingsHelper,

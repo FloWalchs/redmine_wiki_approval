@@ -155,20 +155,14 @@ class WikiApprovalController < ApplicationController
   end
 
   def find_page
-    unless params[:title] && params[:version]
-      render_404
-      return
-    end
+    return render_404 unless params[:title] && params[:version]
 
     if params[:version] && params[:title]
       @page = WikiPage.joins(:wiki, :content)
                       .find_by(wikis: { project_id: @project.id }, title: params[:title], wiki_contents: { version: params[:version] })
     end
 
-    if @page.nil?
-      render_404
-      return
-    end
+    return render_404 unless @page
   end
 
   def check_module_enabled
@@ -183,10 +177,7 @@ class WikiApprovalController < ApplicationController
       # users
       if (u = m.user)
         next if u.admin? || u.id == autor_id
-        allowed = u.respond_to?(:allowed_to?) ?
-                    u.allowed_to?(:wiki_approval_grant, project) :
-                    u.roles_for_project(project).any? { |r| Array(r.permissions).include?(:wiki_approval_grant) }
-        users << u if allowed
+        users << u if u.allowed_to?(:wiki_approval_grant, project)
       end
 
       # groups
@@ -203,32 +194,20 @@ class WikiApprovalController < ApplicationController
   end
 
   def duplicate_users?(steps_params)
-    require 'set'
-
-    # Defensiv: akzeptiere Hash oder Parameters
-    h =
-      if steps_params.is_a?(Hash)
-        steps_params
-      elsif steps_params.respond_to?(:to_unsafe_h)
-        steps_params.to_unsafe_h
-      else
-        # Fallback
-        steps_params
-      end
+    # Converts Rails params into a hash or uses the hash if it already is one
+    h = steps_params.respond_to?(:to_unsafe_h) ? steps_params.to_unsafe_h : steps_params
+    return false unless h.respond_to?(:values)
 
     seen = Set.new
-
-    # Iteriere defensiv, ohne implizite Konvertierung zu triggern
-    values = h.is_a?(Hash) ? h.values : (steps_params.respond_to?(:values) ? steps_params.values : [])
-    values.each do |users|
+    h.values.each do |users|
       Array(users).each do |u|
+        # Compact access to string or symbol keys
         user_id = (u["principal_id"] || u[:principal_id]).to_i
         next if user_id.zero?
         return true if seen.include?(user_id)
         seen.add(user_id)
       end
     end
-
     false
   end
 

@@ -1,8 +1,7 @@
 <% 
   return if @wiki_approval_data.nil?
-  return unless RedmineWikiApproval.approval_enabled?(@project, @wiki_approval_data[:setting])
 
-  if @wiki_approval_data[:approval] && !@wiki_approval_data[:approval]&.published?
+  if @wiki_approval_data[:approval] && !@wiki_approval_data[:approval]&.published? && RedmineWikiApproval.approval_enabled?(@project, @wiki_approval_data[:setting])
 -%>
     <h3><%= l(:label_wiki_approval_workflow) %></h3>
     <div id="approval">

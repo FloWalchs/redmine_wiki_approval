@@ -13,11 +13,7 @@ class AddWikiApprovalWorkflow < ActiveRecord::Migration[5.2]
 
     add_index :wiki_approval_workflows, :status
     add_index :wiki_approval_workflows, [:wiki_page_id, :wiki_version_id], unique: true, name: "idx_waw_page_and_version"
-    add_foreign_key(
-      :wiki_approval_workflows,
-      :users,
-      column: :author_id
-    )
+    add_index :wiki_approval_workflows, :author_id
     add_foreign_key(
       :wiki_approval_workflows,
       :wiki_pages,

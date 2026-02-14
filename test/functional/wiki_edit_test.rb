@@ -111,4 +111,20 @@ class WikiEditTest < WikiApproval::Test::ControllerCase
     assert_select 'input[type=checkbox][name=status][id=status][value=draft][disabled=disabled]'
     assert_select 'input[type=checkbox][name=status][id=status][value=draft][checked]', 0
   end
+
+  test 'should render wiki edit with draft not checked disabled only draft' do
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_draft_enabled] = 'true'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_enabled] = 'false'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_required] = 'false'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_version] = 'false'
+
+    get :edit, params: { project_id: @project.id, id: @page.title }
+    assert_response :success
+
+    assert_select 'input[type=checkbox][name=status][id=status][value=draft]' do |elements|
+      el = elements.first
+      assert_nil el['disabled'], 'not disabled'
+      assert_nil el['checked'], 'not checked'
+    end
+  end
 end
