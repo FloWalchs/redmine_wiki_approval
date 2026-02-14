@@ -1,0 +1,45 @@
+es:
+  label_wiki_approval: Aprobación del wiki
+  permission_wiki_approval_settings: Administrar la aprobación del wiki
+  permission_wiki_approval_start: Iniciar aprobación
+  permission_wiki_approval_grant: Conceder aprobación
+  permission_wiki_approval_forward: Reenviar aprobación
+  permission_wiki_draft_view: Ver borrador
+  permission_wiki_draft_create: Crear borrador
+  label_wiki_approval_settings_projects: Configurable por proyecto
+  label_wiki_approval_settings_comment: Comentario del wiki obligatorio
+  label_wiki_approval_settings_required: Aprobación obligatoria
+  label_wiki_approval_settings_version: Flujo de aprobación para la próxima versión
+  label_wiki_approval_settings_draft_enabled: Borrador del wiki habilitado
+  label_wiki_approval_settings_enabled: Aprobación del wiki habilitada
+  text_wiki_approval_settings_version: 'Después de iniciar un flujo de aprobación, será obligatorio para futuras versiones de esta página.'
+  wiki_approval_link_draft: Ver borrador
+  wiki_approval_link_release: Versión publicada
+  wiki_approval_workflow:
+    status:
+      draft: "Borrador"
+      pending: "En aprobación"
+      rejected: "Rechazado"
+      published: "Publicado"
+      released: "Liberado"
+      canceled: "Cancelado"
+  wiki_approval_workflow_steps:
+    status:
+      canceled: "Cancelado"
+      unstarted: "Planificado"
+      pending: "En aprobación"
+      rejected: "Rechazado"
+      approved: "Aprobado"
+  label_wiki_approval_workflow: Flujo de aprobación
+  label_wiki_approval_step: Paso
+  label_wiki_approval_starter: Iniciador del flujo
+  wiki_approval_unable_start_status: No se permiten cambios, el estado es "%{status}".
+  wiki_approval_unable_start_user: "Un usuario no puede aparecer varias veces."
+  wiki_approval_unable_note: Se requiere un comentario
+  wiki_approval_add_user: Añadir usuario
+  wiki_approval_add_step: Añadir paso
+  wiki_approval_and: Y
+  wiki_approval_or: O
+  label_wiki_approval_workflow_plural: Flujos de aprobación del wiki
+  label_wiki_approval_notifications: Flujo de aprobación del wiki
+  wiki_approval_notifications_typ: "%{typ} fue actualizado por %{author}."

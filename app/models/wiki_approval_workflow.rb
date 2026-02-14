@@ -1,0 +1,122 @@
+# frozen_string_literal: true
+
+class WikiApprovalWorkflow < ApplicationRecord 
+  self.table_name = 'wiki_approval_workflows'
+  attr_accessor :_status_changed_in_txn
+
+  belongs_to :wiki_page
+  belongs_to :wiki_version, class_name: 'WikiContent::Version'
+  belongs_to :author, class_name: 'User'
+
+  has_many :approval_steps, class_name: 'WikiApprovalWorkflowSteps', dependent: :destroy, inverse_of: :approval
+  has_many :approval_statuses, class_name: 'WikiApprovalWorkflowStatus', dependent: :destroy
+  validates :status, presence: true
+  after_create :cancel_old_approvals
+
+  after_update :mark_status_changed
+  after_commit :create_statuses_on_status_change
+
+  if ActiveRecord::VERSION::MAJOR >= 7
+    # Rails 7.x und 8.x → positional arguments
+    enum :status, {
+      canceled: 5,
+      draft: 10,
+      pending: 20,
+      rejected: 40,
+      published: 60,
+      released: 70,
+    }
+  else
+    enum status: {
+      canceled: 5,
+      draft: 10,
+      pending: 20,
+      rejected: 40,
+      published: 60,
+      released: 70,
+    }
+  end
+
+  scope :by_author, ->(user_id) { where(author_id: user_id) }
+  scope :for_wiki, ->(page_id, version_id) {
+    where(wiki_page_id: page_id, wiki_version_id: version_id)
+  }
+  scope :latest_public_version, ->(page_id) {
+    where(wiki_page_id: page_id, status: [statuses[:published], statuses[:released]])
+      .order(id: :desc)
+      .limit(1)
+  }
+
+  def steps_grouped_with_default
+    grouped = approval_steps.group_by(&:step)
+
+    # 2. steps from last released-version
+    if grouped.blank?
+      grouped = WikiApprovalWorkflow
+                  .where(wiki_page_id: wiki_page_id, status: :released)
+                  .order(wiki_version_id: :desc)
+                  .first
+                  &.approval_steps
+                  &.group_by(&:step) || {}
+    end
+
+    # when step 1 is not there, default value
+    grouped[1] ||= [approval_steps.build(step: 1, step_type: :or)]
+
+    grouped
+  end
+
+  def self.latest_public_from_version(page_id, from_version)
+
+    record = where(
+      wiki_page_id: page_id,
+      status: [statuses[:published], statuses[:released]]
+    )
+    .where('wiki_version_id < ?', from_version)
+    .order(id: :desc)
+    .select(:wiki_version_id)
+    .first
+
+    record&.wiki_version_id || 1
+
+  end
+
+  def cancel_old_approvals
+    # find old workflows with < pending
+    old_ids = WikiApprovalWorkflow
+            .where(wiki_page_id: wiki_page_id)
+            .where('wiki_version_id < ?', wiki_version_id)
+            .where(status: WikiApprovalWorkflow.statuses[:pending])
+                .pluck(:id)
+
+    return if old_ids.empty?
+
+    ActiveRecord::Base.transaction do
+      # old Approvals canceln, no after_update or after_commit with .update_all
+      WikiApprovalWorkflow.where(id: old_ids)
+                          .update_all(status: WikiApprovalWorkflow.statuses[:canceled])
+
+      # Steps canceln
+      WikiApprovalWorkflowSteps.where(wiki_approval_workflow_id: old_ids)
+                        .where(status: WikiApprovalWorkflowSteps.statuses[:pending])
+                        .update_all(status: WikiApprovalWorkflowSteps.statuses[:canceled],
+                                    updated_at: Time.current)
+    end
+  end
+
+  def mark_status_changed
+    # one time per transaction
+    self._status_changed_in_txn ||= saved_change_to_status?
+  end
+
+  def create_statuses_on_status_change
+    return unless self._status_changed_in_txn || saved_change_to_status?
+
+    WikiApprovalWorkflowStatus.create!(
+      wiki_approval_workflow_id: self.id,
+      status: self.class.statuses[status]
+    )
+
+  end
+
+end

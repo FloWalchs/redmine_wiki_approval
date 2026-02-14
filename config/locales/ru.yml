@@ -1,0 +1,46 @@
+
+ru:
+  label_wiki_approval: Утверждение вики
+  permission_wiki_approval_settings: Управление утверждением вики
+  permission_wiki_approval_start: Запуск утверждения
+  permission_wiki_approval_grant: Предоставить утверждение
+  permission_wiki_approval_forward: Перенаправить утверждение
+  permission_wiki_draft_view: Просмотреть черновик
+  permission_wiki_draft_create: Создать черновик
+  label_wiki_approval_settings_projects: Настраивается для каждого проекта
+  label_wiki_approval_settings_comment: Требуется комментарий вики
+  label_wiki_approval_settings_required: Требуется утверждение
+  label_wiki_approval_settings_version: Процесс утверждения для следующей версии
+  label_wiki_approval_settings_draft_enabled: Черновик вики включён
+  label_wiki_approval_settings_enabled: Утверждение вики включено
+  text_wiki_approval_settings_version: 'После запуска процесса утверждения он будет требоваться для будущих версий этой страницы.'
+  wiki_approval_link_draft: Просмотреть черновик
+  wiki_approval_link_release: Опубликованная версия
+  wiki_approval_workflow:
+    status:
+      draft: "Черновик"
+      pending: "На утверждении"
+      rejected: "Отклонено"
+      published: "Опубликовано"
+      released: "Выпущено"
+      canceled: "Отменено"
+  wiki_approval_workflow_steps:
+    status:
+      canceled: "Отменено"
+      unstarted: "Запланировано"
+      pending: "На утверждении"
+      rejected: "Отклонено"
+      approved: "Утверждено"
+  label_wiki_approval_workflow: Процесс утверждения
+  label_wiki_approval_step: Шаг
+  label_wiki_approval_starter: Инициатор процесса
+  wiki_approval_unable_start_status: 'Изменения запрещены. Текущий статус — «%{status}».'
+  wiki_approval_unable_start_user: "Один пользователь не может быть указан несколько раз."
+  wiki_approval_unable_note: Требуется комментарий
+  wiki_approval_add_user: Добавить пользователя
+  wiki_approval_add_step: Добавить шаг
+  wiki_approval_and: И
+  wiki_approval_or: ИЛИ
+  label_wiki_approval_workflow_plural: Процессы утверждения вики
+  label_wiki_approval_notifications: Процесс утверждения вики
+  wiki_approval_notifications_typ: "%{typ} был обновлён пользователем %{author}."

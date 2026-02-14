@@ -1,0 +1,111 @@
+<%    
+if @wiki_approval_data && RedmineWikiApproval.draft_create?(@project, @wiki_approval_data[:setting])
+
+    # disabled, approval_required or approval_version_required
+    disabled = @wiki_approval_data[:setting].wiki_approval_required || 
+               (@wiki_approval_data[:setting].wiki_approval_version && @wiki_approval_data[:latest_public_approval]&.released?)
+
+    # default, same as disabled OR current in pending/rejected approval
+    default = disabled ||
+              (@wiki_approval_data[:approval] && @wiki_approval_data[:approval].status.in?(%w[pending rejected draft]))
+
+    status_hidden = disabled ? "draft" : "published"
+
+    if @wiki_approval_data[:setting].wiki_draft_enabled == false && 
+       @wiki_approval_data[:setting].wiki_approval_enabled && 
+       @wiki_approval_data[:setting].wiki_approval_required == false &&
+       @wiki_approval_data[:setting].wiki_approval_version == false
+        disabled = true
+        default = false
+        status_hidden = "published"
+    end
+
+-%>
+    <p id="wiki_approval_draft_form">
+        <label><%= l("wiki_approval_workflow.status.draft") %></label>
+        <%= hidden_field_tag 'status_disabled', disabled %>
+        <%= hidden_field_tag 'status', status_hidden %>
+        <%= check_box_tag 'status', "draft", default, disabled: disabled %>
+    </p>
+
+<% end 
+
+if RedmineWikiApproval.wiki_comment_required?(@project, @wiki_approval_data&.dig(:setting)) %>
+
+    <script>
+        // for the required *
+        document.addEventListener('DOMContentLoaded', function() {
+            // input field from comments wiki edit page
+            const input = document.getElementById("content_comments");
+            if (input) {
+                const label = input.previousElementSibling; // labe is previous
+                if (label && label.tagName.toLowerCase() === "label") {
+                    // create span, appendChild inside
+                    const span = document.createElement("span");
+                    span.className = "required";
+                    span.textContent = " *";
+                    label.appendChild(span);
+                }
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // set hidden parameter field, when no comment
+            const form    = document.querySelector('form#wiki_form');
+            const contentText = document.getElementById("content_text");
+            const contentComments = document.getElementById("content_comments");
+
+            if (form && contentText && contentComments) {
+
+                // Store the original value
+                const originalText = contentText.value;
+
+                form.addEventListener("submit", function (event) {
+                    const currentText = contentText.value;
+                    const comment = contentComments.value.trim();
+
+                    // prevent Submit
+                    <% if @page && @page.id == nil %>
+                        if (comment === "") {
+                            return preventForm(event);
+                        }
+                    <% else %>
+                        if (currentText !== originalText && comment === "") {
+                            return preventForm(event);
+                        }
+                    <% end %>
+                });
+
+            }
+        });
+
+
+        function preventForm(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            const input = document.getElementById("content_comments");
+            if (input) {
+                const label = input.previousElementSibling;
+                if (label && label.tagName.toLowerCase() === "label") {
+                    label.className = "error";
+                }
+            }
+
+            let errorBox = document.getElementById('clientErrorExplanation');
+            if (!errorBox) {
+                const content = document.getElementById('content')
+                if (content) {
+                    errorBox = document.createElement('div');
+                    errorBox.id = 'errorExplanation';
+                    errorBox.innerHTML = '<%= j(l(:field_comments) + ' ' + l(:label_required_lower)) %>';
+                    content.prepend(errorBox);
+                }
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return false;
+        }
+
+
+    </script>
+<% end %>

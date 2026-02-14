@@ -1,0 +1,148 @@
+# frozen_string_literal: true
+
+class WikiApprovalWorkflowSteps < ApplicationRecord 
+  self.table_name = 'wiki_approval_workflow_steps'
+
+  belongs_to :approval, class_name: 'WikiApprovalWorkflow', foreign_key: :wiki_approval_workflow_id,
+             inverse_of: :approval_steps
+
+  belongs_to :principal, polymorphic: true
+
+  validates :step, :step_type, :status, presence: true
+  validates :note, length: { maximum: 1000 }
+  validates :note, presence: true, if: :status_rejected?
+
+  after_save :check_next_step
+  
+  if ActiveRecord::VERSION::MAJOR >= 7
+    # Rails 7.x und 8.x → positional arguments
+    enum :status, {
+      canceled: 5,    # one is rejected, all other canceled
+      unstarted: 15,  # planed for
+      pending: 20,    # in approval mode
+      rejected: 40,   # no approved
+      approved: 70,   # released
+    }, prefix: :status
+
+    enum :step_type, {
+      or: 0,
+      and: 1
+    }, prefix: true
+  else
+    # redmine 5.1
+    enum status: {
+      canceled: 5,    # one is rejected, all other canceled
+      unstarted: 15,  # planed for
+      pending: 20,    # in approval mode
+      rejected: 40,   # no approved
+      approved: 70,   # released
+    }, _prefix: true
+
+    enum step_type: {
+      or: 0,
+      and: 1
+    }, _prefix: true
+  end
+
+  scope :for_principal, ->(principal) {
+    where(principal_id: principal.id, principal_type: principal.class.name)
+  }
+
+  def principal=(obj)
+    super
+    self.principal_type = obj.class.name if obj
+  end
+
+  # Find the first step number for a given approval where:
+  # - The principal is the given user OR one of their groups
+  # - The status is pending
+  # - Returns the smallest step number (or nil if none found)
+  def self.first_pending_step_for(approval, user, project, id = nil)
+    return nil if approval.blank?
+
+    # Build base query for approval steps
+    query = approval.approval_steps.where(status: statuses[:pending])
+    query = query.where(id: id) if id.present? # Filter by step if provided
+
+    # 1. Check for steps assigned directly to the user
+    step_found = query.where(principal_id: user.id, principal_type: 'User')
+                         .order(:id)
+                         .first
+    return step_found if step_found.present?
+
+    # 2. If no user step found, check for steps assigned to any of the user's groups
+    group_ids = user.groups.pluck(:id)
+    return nil if group_ids.empty?
+
+    query.where(principal_id: group_ids, principal_type: 'Group')
+         .order(:step)
+         .first
+  end
+
+  def self.check_all_steps_approved(approval)
+    # when all steps ar approved or complete = done
+    if approval.approval_steps.all? { |s| s.status_approved? }
+      approval.update!(status: :released)
+    end
+  end
+
+  private
+
+  def check_next_step
+    case status.to_sym
+    when :unstarted
+      # current stepNr 1 - to pending
+      update!(status: :pending) if step == find_current_step_for_pending
+      current_step_delete_or
+      approval.update!(status: :pending) unless approval.pending?
+    when :pending
+      approval.update!(status: :pending) unless approval.pending?
+    when :rejected
+      # all current to canceled
+      approval.approval_steps.where(status: :pending).find_each do |step|
+        step.update!(status: :canceled)
+      end
+      approval.update!(status: :rejected) unless approval.rejected?
+    when :approved
+
+      current_step_delete_or
+
+      # start next step if all approved
+      current_step = approval.approval_steps.where(step: step)
+      if current_step.all? { |s| s.status_approved? }
+        affected = approval.approval_steps.where(step: step + 1).update_all(status: :pending, updated_at: Time.current)
+        WikiApprovalMailer.deliver_wiki_approval_step(approval, approval.wiki_page, User.current, step + 1) if affected.positive?
+      end
+
+      approval.approval_steps.check_all_steps_approved(approval)
+
+    end
+  end
+
+  def find_current_step_for_pending
+
+    WikiApprovalWorkflowSteps
+      .where(wiki_approval_workflow_id: wiki_approval_workflow_id)
+      .where('status <= ?', WikiApprovalWorkflowSteps.statuses[:pending])
+      .where('step <= ?', step)
+      .order(step: :asc)
+      .limit(1)
+      .pluck(:step)
+      .first
+
+  end
+
+  def current_step_delete_or
+     # OR-Logic: delete all <= pending from same stepNr
+    return unless step_type_or? && (
+      status_approved? ||
+      approval.approval_steps.where(step: step, status: :approved).exists?
+    )
+
+    approval.approval_steps
+            .where(step: step)
+            .where('status <= ?', WikiApprovalWorkflowSteps.statuses[:pending])
+            .delete_all
+  end
+
+end

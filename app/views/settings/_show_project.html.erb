@@ -1,0 +1,79 @@
+<div id="wiki_approval_settings">
+<%
+    @wiki_approval_setting = WikiApprovalSetting.find_or_create(@project.id)
+%>
+
+<%= labelled_form_for :setting, @wiki_approval_setting,
+                             :url => {:controller => 'wiki_approval_settings',
+                             :action => 'update', :project_id => @project, :tab => 'wiki_approval',
+                             :partial => 'wiki_approval_settings/update',
+                             :setting_id => @wiki_approval_setting.id} do |f| %>
+    <%= error_messages_for 'wiki_approval_setting' %>
+
+    <fieldset class="box tabular settings">
+      <legend><%= l(:label_settings) %></legend>
+      <% if Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_comment] == WikiApprovalSettingsHelper::PROJECT %>
+      <p>  
+        <label><%= l(:label_wiki_approval_settings_comment) %></label>
+        <%= hidden_field_tag 'wiki_comment_required', '0' %>
+        <%= check_box_tag 'wiki_comment_required', '1', @wiki_approval_setting.wiki_comment_required %>
+      </p>
+      <% end %>
+      <% if Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_draft_enabled] == WikiApprovalSettingsHelper::PROJECT %>
+      <p>
+        <label><%= l(:label_wiki_approval_settings_draft_enabled) %></label>
+        <%= hidden_field_tag 'wiki_draft_enabled', '0' %>
+        <%= check_box_tag 'wiki_draft_enabled', '1', @wiki_approval_setting.wiki_draft_enabled %>
+      </p>
+      <% end %>
+      <% if Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_enabled] == WikiApprovalSettingsHelper::PROJECT %>
+      <p>
+        <label><%= l(:label_wiki_approval_settings_enabled) %></label>
+        <%= hidden_field_tag 'wiki_approval_enabled', '0' %>
+        <%= check_box_tag 'wiki_approval_enabled', '1', @wiki_approval_setting.wiki_approval_enabled, id: 'approval_enabled_box' %>
+      </p>
+      <% end %>
+      <div style="margin-left: 20px;">
+      <% if Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_required] == WikiApprovalSettingsHelper::PROJECT %>
+      <p>
+        <label><%= l(:label_wiki_approval_settings_required) %></label>
+        <%= hidden_field_tag 'wiki_approval_required', '0' %>
+        <%= check_box_tag 'wiki_approval_required', '1', @wiki_approval_setting.wiki_approval_required, id: 'approval_required_box' %>
+      </p>
+      <% end %>
+      <% if Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_version] == WikiApprovalSettingsHelper::PROJECT %>
+      <p>
+        <label><%= l(:label_wiki_approval_settings_version) %></label>
+        <%= hidden_field_tag 'wiki_approval_version', '0' %>
+        <%= check_box_tag 'wiki_approval_version', '1', @wiki_approval_setting.wiki_approval_version, id: 'approval_version_box' %>
+        <em class="info"><%= t(:text_wiki_approval_settings_version) %></em>
+      </p>
+      <% end %>
+      </div>
+      
+    </fieldset>
+    <%= submit_tag l(:button_update) %>
+<% end %>
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const mainCheckbox = document.getElementById('approval_enabled_box');
+    const dependentCheckboxes = [
+      document.getElementById('approval_required_box'),
+      document.getElementById('approval_version_box')
+    ];
+
+    function toggleDependentCheckboxes() {
+      const isDisabled = !mainCheckbox.checked;
+      dependentCheckboxes.forEach(cb => {
+        cb.disabled = isDisabled;
+        if (isDisabled) cb.checked = false;
+      });
+    }
+
+    mainCheckbox.addEventListener('change', toggleDependentCheckboxes);
+    toggleDependentCheckboxes();
+  });
+</script>

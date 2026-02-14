@@ -1,0 +1,46 @@
+
+fr:
+  label_wiki_approval: Approbation du wiki
+  permission_wiki_approval_settings: Gérer l’approbation du wiki
+  permission_wiki_approval_start: Démarrer l’approbation
+  permission_wiki_approval_grant: Accorder l’approbation
+  permission_wiki_approval_forward: Transférer l’approbation
+  permission_wiki_draft_view: Voir le brouillon
+  permission_wiki_draft_create: Créer un brouillon
+  label_wiki_approval_settings_projects: Configurable par projet
+  label_wiki_approval_settings_comment: Commentaire du wiki requis
+  label_wiki_approval_settings_required: Approbation requise
+  label_wiki_approval_settings_version: Flux d’approbation pour la prochaine version
+  label_wiki_approval_settings_draft_enabled: Brouillon du wiki activé
+  label_wiki_approval_settings_enabled: Approbation du wiki activée
+  text_wiki_approval_settings_version: 'Après le démarrage d’un flux d’approbation, celui-ci sera requis pour les futures versions de cette page.'
+  wiki_approval_link_draft: Voir le brouillon
+  wiki_approval_link_release: Version publiée
+  wiki_approval_workflow:
+    status:
+      draft: "Brouillon"
+      pending: "En approbation"
+      rejected: "Rejeté"
+      published: "Publié"
+      released: "Diffusé"
+      canceled: "Annulé"
+  wiki_approval_workflow_steps:
+    status:
+      canceled: "Annulé"
+      unstarted: "Planifié"
+      pending: "En approbation"
+      rejected: "Rejeté"
+      approved: "Approuvé"
+  label_wiki_approval_workflow: Flux d’approbation
+  label_wiki_approval_step: Étape
+  label_wiki_approval_starter: Initiateur du flux
+  wiki_approval_unable_start_status: Les modifications ne sont pas autorisées, le statut est « %{status} ».
+  wiki_approval_unable_start_user: "Un utilisateur ne peut pas apparaître plusieurs fois."
+  wiki_approval_unable_note: Un commentaire est requis
+  wiki_approval_add_user: Ajouter un utilisateur
+  wiki_approval_add_step: Ajouter une étape
+  wiki_approval_and: ET
+  wiki_approval_or: OU
+  label_wiki_approval_workflow_plural: Flux d’approbation du wiki
+  label_wiki_approval_notifications: Flux d’approbation du wiki
+  wiki_approval_notifications_typ: "%{typ} a été mis à jour par %{author}."

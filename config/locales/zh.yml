@@ -1,0 +1,45 @@
+zh:
+  label_wiki_approval: Wiki 审批
+  permission_wiki_approval_settings: 管理 Wiki 审批
+  permission_wiki_approval_start: 开始审批
+  permission_wiki_approval_grant: 授予审批
+  permission_wiki_approval_forward: 转发审批
+  permission_wiki_draft_view: 查看草稿
+  permission_wiki_draft_create: 新建草稿
+  label_wiki_approval_settings_projects: 可按项目配置
+  label_wiki_approval_settings_comment: 必须填写 Wiki 评论
+  label_wiki_approval_settings_required: 需要审批
+  label_wiki_approval_settings_version: 下一版本的审批工作流
+  label_wiki_approval_settings_draft_enabled: 启用 Wiki 草稿
+  label_wiki_approval_settings_enabled: 启用 Wiki 审批
+  text_wiki_approval_settings_version: '在启动审批工作流后，此页面的后续版本将必须经过审批。'
+  wiki_approval_link_draft: 查看草稿
+  wiki_approval_link_release: 已发布版本
+  wiki_approval_workflow:
+    status:
+      draft: "草稿"
+      pending: "审批中"
+      rejected: "已拒绝"
+      published: "已发布"
+      released: "已发布"
+      canceled: "已取消"
+  wiki_approval_workflow_steps:
+    status:
+      canceled: "已取消"
+      unstarted: "未开始"
+      pending: "审批中"
+      rejected: "已拒绝"
+      approved: "已批准"
+  label_wiki_approval_workflow: 审批工作流
+  label_wiki_approval_step: 步骤
+  label_wiki_approval_starter: 工作流发起人
+  wiki_approval_unable_start_status: '当前状态为“%{status}”，不允许更改。'
+  wiki_approval_unable_start_user: "同一用户不能出现多次。"
+  wiki_approval_unable_note: 需要填写评论
+  wiki_approval_add_user: 添加用户
+  wiki_approval_add_step: 添加步骤
+  wiki_approval_and: AND
+  wiki_approval_or: OR
+  label_wiki_approval_workflow_plural: Wiki 审批工作流
+  label_wiki_approval_notifications: Wiki 审批工作流
+  wiki_approval_notifications_typ: "%{author} 更新了 %{typ}。"

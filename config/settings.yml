@@ -1,0 +1,6 @@
+---
+wiki_approval_settings_comment: 'false'
+wiki_approval_settings_draft_enabled: 'true'
+wiki_approval_settings_enabled: 'project'
+wiki_approval_settings_required: 'project'
+wiki_approval_settings_version: 'true'

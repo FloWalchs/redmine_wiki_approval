@@ -1,0 +1,108 @@
+<% 
+  return if @wiki_approval_data.nil?
+
+  if @wiki_approval_data[:approval] && !@wiki_approval_data[:approval]&.published? && RedmineWikiApproval.approval_enabled?(@project, @wiki_approval_data[:setting])
+-%>
+    <h3><%= l(:label_wiki_approval_workflow) %></h3>
+    <div id="approval">
+      <ul>
+        <li class="approval-sidebar-header">
+          <%= l("wiki_approval_workflow.status.#{@wiki_approval_data[:approval].status}") %> ·
+          <%= l(:label_ago) + " " + time_ago_in_words(@wiki_approval_data[:approval].updated_at) %>
+          <% if User.current.allowed_to?(:view_wiki_edits, @project) %>
+            · (<%= link_to l(:label_diff), diff_project_wiki_page_path(project_id: @project.identifier, id: @page.title, version: @wiki_approval_data[:view_version_id], version_from: WikiApprovalWorkflow.latest_public_from_version(@page.id, @wiki_approval_data[:view_version_id])) %>)
+          <% end %>  
+        </li>
+      </ul>
+      <% if @wiki_approval_data[:approval].status.in?(%w[pending rejected released canceled]) %>
+        <ul>
+          <li>
+            <div class="approval-sidebar-user">
+              <%= avatar(@wiki_approval_data[:approval].author, :size => 16, :title => @wiki_approval_data[:approval].author.name) %> 
+              <div><%= @wiki_approval_data[:approval].author.name %></div>
+              <div class="aproval-sidebar-status">
+                  <%= content_tag :span, l(:label_wiki_approval_starter),
+                      title: l(:label_ago) + " " + time_ago_in_words(@page.content.updated_on)
+                  %>
+              </div>
+            </div>
+            <% if @wiki_approval_data[:approval].note.present? %>
+              <%= content_tag :div,
+                      @wiki_approval_data[:approval].note,
+                      title: l(:field_comments),
+                      class: "aproval-sidebar-note" %>
+            <% end %>
+          </li>
+    
+        </ul>
+        <ul>
+          <% @wiki_approval_data[:approval].approval_steps.order(:step).each do |step| %>
+            <li>
+              <div class="approval-sidebar-user">
+                <%= avatar(step.principal, size: 16, title: step.principal.name) if step.principal %>
+                <div><%= step.principal&.name %></div>
+                <div class="aproval-sidebar-status">
+                  <% if @wiki_approval_data[:step_approval] &&
+                        @wiki_approval_data[:step_approval] == step &&
+                        @wiki_approval_data[:step_approval].id == step.id &&
+                        User.current.allowed_to?(:wiki_approval_grant, @project) %>
+                    <%= link_to l("wiki_approval_workflow_steps.status.#{step.status}"),
+                                wiki_approval_grant_path(@project, @page.title, @page.content.version, @wiki_approval_data[:step_approval].id),
+                                remote: true %>
+                  <% else %>
+                    <%= content_tag :span,
+                        l("wiki_approval_workflow_steps.status.#{step.status}"),
+                        title: "#{l(:label_wiki_approval_step)} #{step.step} | #{l(:label_ago)} #{time_ago_in_words(step.updated_at)}" %>
+                  <% end %>
+                </div>
+              </div>
+              <% if step.note.present? %>
+                <%= content_tag :div,
+                    step.note,
+                    title: l(:field_comments),
+                    class: "aproval-sidebar-note" %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @wiki_approval_data[:latest_public_approval] && @wiki_approval_data[:latest_public_approval].wiki_version_id == @wiki_approval_data[:view_version_id] %>
+    
+    <% content_for :header_tags do %>
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+          function hide_wiki_history_tags() {
+            // find startTag content, begins inside first
+            // only set this tags, without classnames to "none"
+            // end searching when wiki content starts
+
+            const start = document.getElementById('content').firstElementChild;
+            const end = document.querySelector('div.wiki.wiki-page');
+
+            let current = start.nextElementSibling;
+
+            while (current && current !== end) {
+                const next = current.nextElementSibling;
+
+                if ((current.tagName === 'P' && current.classList == '') ||
+                    (current.tagName === 'H2' && current.classList == '') ||
+                    (current.tagName === 'HR' && current.classList == ''))
+                    current.style.display = 'none';
+
+                current = next;
+            }
+          }
+
+          hide_wiki_history_tags();
+        });
+      </script>
+    <% end %>
+
+  <% end %>
+
+
+

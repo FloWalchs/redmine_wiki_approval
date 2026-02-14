@@ -1,0 +1,50 @@
+<%= t('wiki_approval_notifications_typ', typ: @type, author: @actor&.name) %>
+<hr />
+<h1>
+  <%= link_to(@wiki_page_title, @wiki_page_url) %>
+  <span class="badge <%= wiki_approval_badge(@approval.status) %>" style="bottom: 0px"><%= l("wiki_approval_workflow.status.#{@approval.status}") %></span>
+</h1>
+<p>
+<%= @wiki_page.content.author.name %> <small>(<%= I18n.t("field_author")%>
+<% if @approval.author_id == @wiki_page.content.author.id %>
+, <%= I18n.t("label_wiki_approval_starter") %>)</small>
+<% else %>
+)</small><br /><%= @approval.author.name %> <small>(<%= I18n.t("label_wiki_approval_starter") %>)</small>
+<% end %>
+<% if @approval.note.present? %>
+  <br /><span style="margin-left: 20px;"><%= @approval.note %></span>
+<% end %>
+</p>
+<%
+  grouped = @approval.approval_steps.group_by(&:step)
+  sorted  = grouped.sort_by { |(step, _)| step.to_i }
+%>
+<% sorted.each do |step, steps| %>
+  <% step_type_key   = steps.first&.step_type %>
+  <% step_type_label = I18n.t("wiki_approval_#{step_type_key}", default: '') %>
+  <p>
+    <strong>
+      <%= h I18n.t(:label_wiki_approval_step, default: 'Schritt') %> <%= h step %>
+      <% if step_type_label.present? %>
+        – <small>(<%= h step_type_label %>)</small>
+      <% end %>
+    </strong>
+    <ul>
+      <% steps.each do |s| %>
+        <li>
+          <%= h s.principal&.name %>
+          <% if s.status.present? %>
+            <small>(<%= h I18n.t("wiki_approval_workflow_steps.status.#{s.status}", default: s.status) %>)</small>
+          <% end %>
+          <% if s.note.present? %>
+              <br /><%= s.note %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </p>
+<% end %>
+<hr />
+<%= l(:label_view_diff) %>
+<br />
+<%= link_to(@diff_url, @diff_url) %>
