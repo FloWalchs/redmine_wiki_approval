@@ -11,7 +11,7 @@ module RedmineWikiApproval
         prepend InstanceOverwriteMethods
 
         after_action :wiki_approval_save, only: [:update]
-        append_before_action :set_wiki_approval_data, only: [:show, :edit]
+        append_before_action :set_wiki_approval_data, only: [:show, :edit, :update]
       end
 
       module InstanceOverwriteMethods
@@ -22,18 +22,32 @@ module RedmineWikiApproval
           setting = WikiApprovalSetting.find_or_create(@project.id)
           return unless RedmineWikiApproval.approval_or_draft_enabled?(@project, setting)
 
-          approval = WikiApprovalWorkflow.for_wiki(@page.id, params[:version].nil? ? @page.version : params[:version].to_i).first
+          # @page nil from :update controller comment_required
+          if @page.nil? && @wiki.present?
+            page_identifier = params[:id] || params[:title]
+            @page = @wiki.find_page(page_identifier) if page_identifier.present?
+          end
+
+          # @page or param
+          view_version = params[:version] || @page&.version
+          
+          # @page must be there
+          approval = @page ? WikiApprovalWorkflow.for_wiki(@page.id, view_version.to_i).first : nil
+          latest_public = @page ? WikiApprovalWorkflow.latest_public_version(@page.id).first : nil
 
           @wiki_approval_data = {
-            view_version_id: params[:version].nil? ? @page.version : params[:version].to_i,
+            view_version_id: view_version&.to_i,
             approval: approval,
-            latest_public_approval: WikiApprovalWorkflow.latest_public_version(@page.id).first,
+            latest_public_approval: latest_public,
             setting: setting,
             step_approval: WikiApprovalWorkflowSteps.first_pending_step_for(approval, User.current, @project, params[:step_id])
           }
         end
 
         def wiki_approval_save
+          return if @page.nil? || @page.errors.any?
+          return unless @page.persisted?
+
           # check params
           status = params[:status]
           return true unless status

@@ -3,7 +3,7 @@
 require 'redmine_plugin_kit'
 
 module RedmineWikiApproval
-  VERSION = '0.9.0'
+  VERSION = '0.9.1'
 
   include RedminePluginKit::PluginBase
 
@@ -82,7 +82,8 @@ module RedmineWikiApproval
       loader.add_patch %w[ProjectsHelper
                           WikiController
                           WikiContentVersion
-                          WikiPage]
+                          WikiPage
+                          WikiContent]
 
       loader.add_global_helper [
         WikiApprovalSettingsHelper,

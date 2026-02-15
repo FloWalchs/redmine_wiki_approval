@@ -127,4 +127,88 @@ class WikiEditTest < WikiApproval::Test::ControllerCase
       assert_nil el['checked'], 'not checked'
     end
   end
+
+  test "should not update wiki page comment required" do
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_comment] = 'true'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_required] = 'true'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_draft_enabled] = 'true'
+
+    # update page
+    assert_no_difference 'WikiApprovalWorkflow.count' do
+      put :update, params: { project_id: @project.id, id: @page.title,
+        content: {
+          text: 'new text in textarea',
+          comments: ''
+        },
+        status_disabled: 'true',
+        status: 'draft'}
+    end
+
+    assert_response :success 
+    assert_select "div#errorExplanation"
+
+  end
+
+  test "should not save new wiki page comment required" do
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_comment] = 'true'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_required] = 'true'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_draft_enabled] = 'true'
+
+    # new page
+    assert_no_difference ['WikiPage.count', 'WikiApprovalWorkflow.count'] do
+      put :update, params: { project_id: @project.id, id: 'newWikPageApproval',
+        content: {
+          text: 'new text in textarea',
+          comments: ''
+        },
+        status_disabled: 'true',
+        status: 'draft'}
+    end
+
+    assert_response :success 
+    assert_select "div#errorExplanation"
+
+  end
+
+  test "should update wiki page comment required" do
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_comment] = 'true'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_required] = 'true'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_draft_enabled] = 'true'
+
+    # update page
+    assert_difference 'WikiApprovalWorkflow.count', 1 do
+      put :update, params: { project_id: @project.id, id: @page.title,
+        content: {
+          text: 'new text in textarea',
+          comments: 'should update comment'
+        },
+        status_disabled: 'true',
+        status: 'draft'}
+    end
+
+    assert_response :redirect 
+    assert_select "div#errorExplanation", false
+
+  end
+
+  test "should save new wiki page comment required" do
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_comment] = 'true'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_required] = 'true'
+    Setting.plugin_redmine_wiki_approval[:wiki_approval_settings_draft_enabled] = 'true'
+
+    # new page
+    assert_difference ['WikiPage.count', 'WikiApprovalWorkflow.count'] do
+      put :update, params: { project_id: @project.id, id: 'newWikPageApproval',
+        content: {
+          text: 'new text in textarea',
+          comments: 'comment new'
+        },
+        status_disabled: 'true',
+        status: 'draft'}
+    end
+
+    assert_response :redirect 
+    assert_select "div#errorExplanation", false
+
+  end
 end
