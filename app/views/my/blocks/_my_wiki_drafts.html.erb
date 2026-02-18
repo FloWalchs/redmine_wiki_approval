@@ -1,0 +1,44 @@
+<% 
+    # drafts from author
+    drafts = WikiApprovalWorkflow.where(
+                "status >= ? AND status <= ? AND author_id = ?", 
+                WikiApprovalWorkflow.statuses[:draft], 
+                WikiApprovalWorkflow.statuses[:rejected], 
+                User.current.id
+)
+%>
+<h3><%= l(:my_wiki_drafts) %> (<%= drafts.count %>) </h3>
+<% if drafts.any? %>
+  <table class="list">
+    <thead>
+      <tr>
+        <th><%= l(:field_project) %></th>
+        <th><%= l(:label_wiki_page) %></th>
+        <th><%= l(:field_status) %></th>
+        <th><%= l(:label_comment) %></th>
+        <th><%= l(:field_created_on) %></th>
+        <th><%= l(:field_updated_on) %></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% drafts.each do |approval| %>
+        <tr class="<%= cycle('odd', 'even') %>">
+          <td><%= link_to approval.wiki_page.project, 
+                          project_path(approval.wiki_page.project.identifier) %></td>
+          <td><%= link_to approval.wiki_page.title, 
+                          project_wiki_page_path(approval.wiki_page.project.identifier, approval.wiki_page.title, :version => approval.wiki_version_id) %></td>
+          <td><%= l("wiki_approval_workflow.status.#{approval.status}") %></td>
+          <td><%= approval.note %></td>
+          <td><%= format_time(approval.created_at) %></td>
+          <td><%= format_time(approval.updated_at) %></td>
+          <td class="buttons">
+            <%= link_to l(:button_view), { :controller => 'wiki', :action => 'show', :project_id => approval.wiki_page.project.identifier, :id => approval.wiki_page.title, :version => approval.wiki_version_id }, :class => 'icon icon-view' %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<% end %>

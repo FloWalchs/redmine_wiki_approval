@@ -43,3 +43,6 @@ ja:
   label_wiki_approval_workflow_plural: Wiki承認ワークフロー
   label_wiki_approval_notifications: Wiki承認ワークフロー
   wiki_approval_notifications_typ: "%{author} により %{typ} が更新されました。"
+  my_wiki_drafts: "自分のWiki下書き"
+  wiki_approval_queue: "Wiki承認待ちキュー"
+  

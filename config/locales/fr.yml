@@ -44,3 +44,6 @@ fr:
   label_wiki_approval_workflow_plural: Flux d’approbation du wiki
   label_wiki_approval_notifications: Flux d’approbation du wiki
   wiki_approval_notifications_typ: "%{typ} a été mis à jour par %{author}."
+  my_wiki_drafts: "Mes brouillons wiki"
+  wiki_approval_queue: "File d'attente d'approbation wiki"
+  

@@ -43,3 +43,6 @@ ko:
   label_wiki_approval_workflow_plural: 위키 승인 워크플로
   label_wiki_approval_notifications: 위키 승인 워크플로
   wiki_approval_notifications_typ: "%{author}님이 %{typ}을(를) 업데이트했습니다."
+  my_wiki_drafts: "내 위키 초안"
+  wiki_approval_queue: "위키 승인 대기열"
+  

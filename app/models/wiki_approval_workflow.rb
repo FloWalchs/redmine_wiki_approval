@@ -86,8 +86,8 @@ class WikiApprovalWorkflow < ApplicationRecord
     old_ids = WikiApprovalWorkflow
             .where(wiki_page_id: wiki_page_id)
             .where('wiki_version_id < ?', wiki_version_id)
-            .where(status: WikiApprovalWorkflow.statuses[:pending])
-                .pluck(:id)
+            .where(status: [WikiApprovalWorkflow.statuses[:draft], WikiApprovalWorkflow.statuses[:pending]])
+            .pluck(:id)
 
     return if old_ids.empty?
 

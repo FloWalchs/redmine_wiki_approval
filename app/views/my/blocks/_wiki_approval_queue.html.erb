@@ -1,0 +1,50 @@
+<% 
+
+    # pending steps for all groups of me, and my user.id
+    principals = [User.current] + User.current.groups
+
+    # create sql for old ruby 2.6: (principal_type = 'User' AND principal_id = 1) OR (principal_type = 'Group' AND principal_id = 5) ...
+    condition_sql = principals.map { "(principal_type = ? AND principal_id = ?)" }.join(" OR ")
+    condition_values = principals.flat_map { |p| [p.class.name, p.id] }
+
+    # status = 20 AND (type='group' and id=1 or type='user' and id=2)
+    pending_steps = WikiApprovalWorkflowSteps.where(status: :pending)
+                                            .where(condition_sql, *condition_values)
+%>
+<h3><%= l(:wiki_approval_queue) %> (<%= pending_steps.count %>) </h3>
+<% if pending_steps.any? %>
+  <table class="list">
+    <thead>
+      <tr>
+        <th><%= l(:field_project) %></th>
+        <th><%= l(:label_wiki_page) %></th>
+        <th><%= l(:label_wiki_approval_starter) %></th>
+        <th><%= l(:label_comment) %></th>
+        <th><%= l(:label_wiki_approval_step) %></th>
+        <th><%= l(:field_created_on) %></th>
+        <th><%= l(:field_updated_on) %></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% pending_steps.each do |step| %>
+        <tr class="<%= cycle('odd', 'even') %>">
+          <td><%= link_to step.approval.wiki_page.project, 
+                          project_path(step.approval.wiki_page.project.identifier) %></td>
+          <td><%= link_to step.approval.wiki_page.title, 
+                          project_wiki_page_path(step.approval.wiki_page.project.identifier, step.approval.wiki_page.title, :version => step.approval.wiki_version_id) %></td>
+          <td><%= step.approval.author %></td>
+          <td><%= step.approval.note %></td>
+          <td><%= step.step %></td>
+          <td><%= format_time(step.approval.created_at) %></td>
+          <td><%= format_time(step.updated_at) %></td>
+          <td class="buttons">
+            <%= link_to l(:button_view), { :controller => 'wiki', :action => 'show', :project_id => step.approval.wiki_page.project.identifier, :id => step.approval.wiki_page.title, :version => step.approval.wiki_version_id }, :class => 'icon icon-view' %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<% end %>

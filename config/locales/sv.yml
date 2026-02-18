@@ -44,3 +44,6 @@ sv:
   label_wiki_approval_workflow_plural: Wiki‑godkännandeflöden
   label_wiki_approval_notifications: Wiki‑godkännandeflöde
   wiki_approval_notifications_typ: "%{typ} uppdaterades av %{author}."
+  my_wiki_drafts: "Mina wikiutkast"
+  wiki_approval_queue: "Godkännandekö för wiki"
+  

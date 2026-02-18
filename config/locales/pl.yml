@@ -44,3 +44,6 @@ pl:
   label_wiki_approval_workflow_plural: Przepływy zatwierdzania wiki
   label_wiki_approval_notifications: Przepływ zatwierdzania wiki
   wiki_approval_notifications_typ: "%{typ} został zaktualizowany przez %{author}."
+  my_wiki_drafts: "Moje wersje robocze wiki"
+  wiki_approval_queue: "Kolejka zatwierdzania wiki"
+  

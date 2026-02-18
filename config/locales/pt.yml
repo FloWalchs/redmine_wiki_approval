@@ -44,3 +44,6 @@ pt:
   label_wiki_approval_workflow_plural: Fluxos de aprovação do wiki
   label_wiki_approval_notifications: Fluxo de aprovação do wiki
   wiki_approval_notifications_typ: "%{typ} foi atualizado por %{author}."
+  my_wiki_drafts: "Os meus rascunhos de wiki"
+  wiki_approval_queue: "Fila de aprovação de wiki"
+  

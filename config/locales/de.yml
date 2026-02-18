@@ -43,3 +43,5 @@ de:
   label_wiki_approval_workflow_plural: Wiki-Freigabe-Workflows
   label_wiki_approval_notifications: Wiki-Freigabe-Workflow
   wiki_approval_notifications_typ: "%{typ} wurde von %{author} aktualisiert."
+  my_wiki_drafts: Meine Wiki-Entwürfe
+  wiki_approval_queue: Wiki Freigabe-Queue

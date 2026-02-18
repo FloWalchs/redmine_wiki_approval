@@ -43,3 +43,6 @@ zh:
   label_wiki_approval_workflow_plural: Wiki 审批工作流
   label_wiki_approval_notifications: Wiki 审批工作流
   wiki_approval_notifications_typ: "%{author} 更新了 %{typ}。"
+  my_wiki_drafts: "我的Wiki草稿"
+  wiki_approval_queue: "Wiki审批队列"
+  

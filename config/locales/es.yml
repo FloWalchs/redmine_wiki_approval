@@ -43,3 +43,6 @@ es:
   label_wiki_approval_workflow_plural: Flujos de aprobación del wiki
   label_wiki_approval_notifications: Flujo de aprobación del wiki
   wiki_approval_notifications_typ: "%{typ} fue actualizado por %{author}."
+  my_wiki_drafts: "Mis borradores de wiki"
+  wiki_approval_queue: "Cola de aprobación de wiki"
+  

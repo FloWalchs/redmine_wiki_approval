@@ -44,3 +44,6 @@ it:
   label_wiki_approval_workflow_plural: Flussi di approvazione del wiki
   label_wiki_approval_notifications: Flusso di approvazione del wiki
   wiki_approval_notifications_typ: "%{typ} è stato aggiornato da %{author}."
+  my_wiki_drafts: "Le mie bozze wiki"
+  wiki_approval_queue: "Coda di approvazione wiki"
+  

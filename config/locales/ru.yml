@@ -44,3 +44,6 @@ ru:
   label_wiki_approval_workflow_plural: Процессы утверждения вики
   label_wiki_approval_notifications: Процесс утверждения вики
   wiki_approval_notifications_typ: "%{typ} был обновлён пользователем %{author}."
+  my_wiki_drafts: "Мои черновики вики"
+  wiki_approval_queue: "Очередь утверждения вики"
+  

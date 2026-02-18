@@ -27,6 +27,7 @@ This plugin does **not** replace Redmine's wiki versioning.
 - **Email Notifications** – Notifications for status and step changes
 - **Per‑Project or Global Settings** – Configure behavior globally or individually per project, such as enabling approval requirements, drafts, or mandatory comments.
 - **Mandatory Save Comment** – Requires users to enter a comment when saving Wiki content (configurable on/off)
+- **My Page Blocks** – Manage your Wiki Approval Queue for pending reviews and track your own Wiki Drafts directly from your personal dashboard
 
 ## 🔐 Permissions Overview
 
@@ -66,7 +67,7 @@ cd $REDMINE_ROOT/plugins
 git clone https://github.com/FloWalchs/redmine_wiki_approval.git
 cd $REDMINE_ROOT
 bundle install
-rake bundle exec rake redmine:plugins:migrate RAILS_ENV=production
+bundle exec rake redmine:plugins:migrate RAILS_ENV=production
 ```
 Restart your Redmine server to load the plugin.
 Enable the Module "Wiki approval" per project
@@ -104,13 +105,13 @@ Enable the Module "Wiki approval" per project
         <br>
         <sub><b>Draft created</b></sub>
       </td>
+    </tr>
+    <tr>
       <td align="center">
         <img src="./docs/screenshots/StartApproval.png" width="175px" />
         <br>
         <sub><b>Start approval</b></sub>
       </td>
-   </tr>
-   <tr>
       <td align="center">
         <img src="./docs/screenshots/InApproval.png" width="175px" />
         <br>
@@ -121,6 +122,8 @@ Enable the Module "Wiki approval" per project
         <br>
         <sub><b>Grant Approval</b></sub>
       </td>
+    </tr>
+    <tr>
       <td align="center">
         <img src="./docs/screenshots/ApprovedStep1.png" width="175px" />
         <br>
@@ -130,6 +133,11 @@ Enable the Module "Wiki approval" per project
         <img src="./docs/screenshots/Released.png" width="175px" />
         <br>
         <sub><b>Released, all steps are approved</b></sub>
+      </td>
+      <td align="center">
+        <img src="./docs/screenshots/MyPage.png" width="175px" />
+        <br>
+        <sub><b>My page</b></sub>
       </td>
     </tr>
   </table>
