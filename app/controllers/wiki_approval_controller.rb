@@ -39,10 +39,10 @@ class WikiApprovalController < ApplicationController
       return
     end
 
-    # 2. no empty users
+    # no empty users
     steps_params = params[:steps].transform_values { |users| users.reject { |u| u["principal_id"].blank? } }
 
-    # 3. Globale doublicat users
+    # Globale doublicat users
     if duplicate_users?(steps_params)
       flash.now[:error] = l(:wiki_approval_unable_start_user)
       restore_form_data
@@ -50,16 +50,21 @@ class WikiApprovalController < ApplicationController
       return
     end
 
+    latest_notifiable_step = nil
+
     ActiveRecord::Base.transaction do
       # if approval is not saved
       @wiki_approval_data[:approval].save! if @wiki_approval_data[:approval].new_record?
+
+      # ist ist already pending, for later mail
+      approval_was_already_pending = (approval.status == 'pending')
 
       # save Steps
       steps_params.each do |step_nr, users|
         # Collect all user_ids for this step group
         user_ids = users.map { |u| u[:principal_id].to_i }
         # Delete all steps for this step_nr that are not in the submitted user_ids
-        approval.approval_steps.where(step: step_nr).where.not(principal: user_ids).destroy_all
+        approval.approval_steps.where(step: step_nr).where.not(principal_id: user_ids).destroy_all
 
         approval.update(note: params[:note], author_id: User.current.id)
 
@@ -71,12 +76,27 @@ class WikiApprovalController < ApplicationController
           # Only set status to :unstarted if current status !approved
           step_record.status = :unstarted if step_record.status.nil? || !step_record.status_approved?
           step_record.step_type = params[:steps_typ][step_nr] || 'or'
-          step_record.save! if step_record.changed?
+          
+          # save if it changed anything
+          if step_record.changed?
+            step_record.save!
+
+            # if it was a new record or changed record, in pending, then send a mail for this step          
+            if latest_notifiable_step == nil && 
+               approval_was_already_pending && 
+               (step_record.saved_changes.key?('id') || (step_record.saved_change_to_attribute?('status') && step_record.status == 'pending'))
+                latest_notifiable_step = step_nr
+            end
+          end
+
         end
       end
 
       @wiki_approval_data[:approval].approval_steps.check_all_steps_approved(approval)
     end
+
+    # Send email after the transaction if step_nr was saved for it, or if the user was changed or is new
+    WikiApprovalMailer.deliver_wiki_approval_step(approval, approval.wiki_page, User.current, latest_notifiable_step) if latest_notifiable_step
 
     redirect_to project_wiki_page_path(@project.identifier, @page.title, :version => @page.content.version)
   end
@@ -128,6 +148,10 @@ class WikiApprovalController < ApplicationController
       end
 
       @step.update({note: params[:note], principal: principal_object}.compact)
+
+      #notify users from the step
+      WikiApprovalMailer.deliver_wiki_approval_step(@step.approval, @step.approval.wiki_page, User.current, @step.step)
+
       redirect_to project_wiki_page_path(@project.identifier, @page.title, :version => @page.content.version)
     else
       @approval_user_options = approval_user_options(@project, @page.content.author_id)
