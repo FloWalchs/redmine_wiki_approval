@@ -143,6 +143,45 @@ Enable the Module "Wiki approval" per project
   </table>
 </div>
 
+## 🔄 Workflow Status Flow
+
+The following diagram illustrates the lifecycle of a wiki page within the approval system:
+
+```mermaid
+graph TD
+    %% Status Definitionen
+    D(Draft)
+    PEN(Pending)
+    REJ(Rejected)
+    CAN(Canceled)
+    REL(Released)
+    PUB(Published)
+
+    %% Main
+    D -- Start Approval --> PEN
+    PEN -- Approve All --> REL
+    PEN -- Decline --> REJ
+    REJ -- Edit --> D
+    
+    %% direct
+    D -- Direct Publish --> PUB
+
+    %% canceled
+    D & PEN & REJ -.->|New Version Started| CAN
+
+    subgraph Approved_Versions [Viewers redirect versions]
+        REL
+        PUB
+    end
+
+    %% Styling
+    style D fill:#fff4dd,stroke:#d4a017
+    style REL fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style PUB fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style REJ fill:#ffebee,stroke:#c62828
+    style CAN fill:#f5f5f5,stroke:#9e9e9e,stroke-dasharray: 5 5
+```   
+
 ## ❌ Uninstall
 
 ```bash
