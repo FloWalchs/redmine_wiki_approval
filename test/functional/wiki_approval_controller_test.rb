@@ -211,10 +211,11 @@ class WikiApprovalControllerTest < WikiApproval::Test::ControllerCase
     }
     assert_response :redirect
     approval.reload
-    assert_equal 3, approval.approval_steps.count
+    assert_equal 4, approval.approval_steps.count
     assert_equal 'approved', approval.approval_steps[0].status
-    assert_equal 'pending', approval.approval_steps[1].status
+    assert_equal 'canceled', approval.approval_steps[1].status
     assert_equal 'pending', approval.approval_steps[2].status
+    assert_equal 'pending', approval.approval_steps[3].status
 
     # approved step 2 first user
     target_step = approval.approval_steps.find_by(principal_id: @dlopper.id)
@@ -224,7 +225,7 @@ class WikiApprovalControllerTest < WikiApproval::Test::ControllerCase
     end
 
     approval.reload
-    assert_equal 3, approval.approval_steps.count
+    assert_equal 4, approval.approval_steps.count
     target_step.reload
     assert_equal 'approved', target_step.status
 
@@ -236,10 +237,11 @@ class WikiApprovalControllerTest < WikiApproval::Test::ControllerCase
     end
 
     approval.reload
-    assert_equal 3, approval.approval_steps.count
+    assert_equal 4, approval.approval_steps.count
     assert_equal 'approved', approval.approval_steps[0].status
-    assert_equal 'approved', approval.approval_steps[1].status
+    assert_equal 'canceled', approval.approval_steps[1].status
     assert_equal 'approved', approval.approval_steps[2].status
+    assert_equal 'approved', approval.approval_steps[3].status
     assert_equal 'released', approval.status
   end
 

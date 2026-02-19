@@ -17,11 +17,11 @@ class WikiApprovalWorkflowSteps < ApplicationRecord
   if ActiveRecord::VERSION::MAJOR >= 7
     # Rails 7.x und 8.x → positional arguments
     enum :status, {
-      canceled: 5,    # one is rejected, all other canceled
       unstarted: 15,  # planed for
       pending: 20,    # in approval mode
       rejected: 40,   # no approved
       approved: 70,   # released
+      canceled: 90,   # one is rejected, all other canceled
     }, prefix: :status
 
     enum :step_type, {
@@ -31,11 +31,11 @@ class WikiApprovalWorkflowSteps < ApplicationRecord
   else
     # redmine 5.1
     enum status: {
-      canceled: 5,    # one is rejected, all other canceled
       unstarted: 15,  # planed for
       pending: 20,    # in approval mode
       rejected: 40,   # no approved
       approved: 70,   # released
+      canceled: 90,   # one is rejected, all other canceled
     }, _prefix: true
 
     enum step_type: {
@@ -80,8 +80,8 @@ class WikiApprovalWorkflowSteps < ApplicationRecord
   end
 
   def self.check_all_steps_approved(approval)
-    # when all steps ar approved or complete = done
-    if approval.approval_steps.all? { |s| s.status_approved? }
+    # when all steps ar approved or canceld = done
+    unless approval.approval_steps.where('status < ?', WikiApprovalWorkflowSteps.statuses[:approved]).exists?
       approval.update!(status: :released)
     end
   end
@@ -93,7 +93,7 @@ class WikiApprovalWorkflowSteps < ApplicationRecord
     when :unstarted
       # current stepNr 1 - to pending
       update!(status: :pending) if step == find_current_step_for_pending
-      current_step_delete_or
+      current_step_or_is_approved
       approval.update!(status: :pending) unless approval.pending?
     when :pending
       approval.update!(status: :pending) unless approval.pending?
@@ -105,11 +105,10 @@ class WikiApprovalWorkflowSteps < ApplicationRecord
       approval.update!(status: :rejected) unless approval.rejected?
     when :approved
 
-      current_step_delete_or
+      current_step_or_is_approved
 
-      # start next step if all approved
-      current_step = approval.approval_steps.where(step: step)
-      if current_step.all? { |s| s.status_approved? }
+      # start next step if all approved from current step
+      unless approval.approval_steps.where(step: step).where('status < ?', WikiApprovalWorkflowSteps.statuses[:approved]).exists?
         affected = approval.approval_steps.where(step: step + 1).update_all(status: :pending, updated_at: Time.current)
         WikiApprovalMailer.deliver_wiki_approval_step(approval, approval.wiki_page, User.current, step + 1) if affected.positive?
       end
@@ -132,17 +131,17 @@ class WikiApprovalWorkflowSteps < ApplicationRecord
 
   end
 
-  def current_step_delete_or
+  def current_step_or_is_approved
      # OR-Logic: delete all <= pending from same stepNr
     return unless step_type_or? && (
       status_approved? ||
       approval.approval_steps.where(step: step, status: :approved).exists?
     )
-
+    # to status canceled
     approval.approval_steps
             .where(step: step)
             .where('status <= ?', WikiApprovalWorkflowSteps.statuses[:pending])
-            .delete_all
+            .update_all(status: :canceled)
   end
 
 end
