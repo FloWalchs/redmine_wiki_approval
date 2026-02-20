@@ -1,31 +1,70 @@
 name: release
 on:
   push:
-    branches-ignore:
-      - '**'
     tags:
-      - '**'
+      - 'v*' # Trigger bei Tags wie v1.0.0
+
 permissions:
   contents: write
+
 jobs:
   archive:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Wichtig, um die Historie für das Changelog zu haben
+
       - name: Set version
         id: version
         run: |
-          REPOSITORY=$(echo ${{ github.repository }} | sed -e "s#.*/##")
-          VERSION=$(echo ${{ github.ref }} | sed -e "s#refs/tags/##g")
+          REPOSITORY=${GITHUB_REPOSITORY#*/}
+          VERSION=${GITHUB_REF#refs/tags/}
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "filename=$REPOSITORY-$VERSION" >> $GITHUB_ENV
           echo "plugin=$REPOSITORY" >> $GITHUB_ENV
-      - uses: actions/checkout@v4
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -z "$PREVIOUS_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"* %s" | grep "#" | sort -u)
+          else
+            COMMITS=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"* %s" | grep "#" | sort -u)
+          fi
+          
+          # Erstelle den Block mit Leerzeilen davor und danach
+          # \n am Anfang sorgt für die Leerzeile nach "# Changelog"
+          echo -e "\n## ${{ env.version }} ($DATE)\n$COMMITS" > current_changes.md
+          
+          if [ -f CHANGELOG.md ]; then
+            # Fügt den Block direkt nach der ersten Zeile (# Changelog) ein
+            sed -i '1r current_changes.md' CHANGELOG.md
+          else
+            # Falls die Datei fehlt, neu erstellen
+            echo "# Changelog" > CHANGELOG.md
+            cat current_changes.md >> CHANGELOG.md
+          fi
+
+      - name: Commit Changelog
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG.md for ${{ env.version }}" || echo "No changes to commit"
+          git push origin HEAD:main # Ersetze main durch deinen Default-Branch
+
       - name: Archive
         run: |
           cd ..; zip -r ${{ env.filename }}.zip ${{ env.plugin }}/ -x "*.git*" "*/docs/*" "*/test/*"
           mv ${{ env.filename }}.zip ${{ env.plugin }}/
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
+          body_path: current_changes.md # Nutzt die gefilterten Commits als Release-Text
           draft: true
           files: ${{ env.filename }}.zip

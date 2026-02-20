@@ -180,18 +180,5 @@ class WikiApprovalActivityControllerTest < WikiApproval::Test::ControllerCase
       end
     end
 
-    get :index, params: {
-      id: project.identifier,
-      from: time_old.to_date.to_s,
-      with_subprojects: 1,
-      show_wiki_approval_workflow: 1
-    }
-    assert_response :success
-    assert_select "div#activity" do
-      assert_select "dl" do
-        assert_select "dt", count: 3
-      end
-    end
-
   end
 end

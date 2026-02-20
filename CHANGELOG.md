@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.0
+## v0.9.0 (2026-02-14)
 
 - First public release
 - Save a wiki version as draft
